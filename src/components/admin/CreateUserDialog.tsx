@@ -131,66 +131,30 @@ export function CreateUserDialog({ open, onOpenChange, userType }: CreateUserDia
     setIsLoading(true);
 
     try {
-      // 1. Create auth user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email,
-        password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/`,
-          data: {
-            full_name: fullName,
-          },
+      // Use edge function to create user (preserves admin session)
+      const { data, error } = await supabase.functions.invoke('create-user', {
+        body: {
+          email,
+          password,
+          fullName,
+          phone: phone || null,
+          userType,
+          // Student fields
+          classId: classId || null,
+          rollNumber: rollNumber || null,
+          admissionNumber: admissionNumber || null,
+          // Teacher fields
+          employeeId: employeeId || null,
+          designation: designation || null,
+          qualification: qualification || null,
+          // Parent fields
+          occupation: occupation || null,
+          relationship: relationship || null,
         },
       });
 
-      if (authError) throw authError;
-      if (!authData.user) throw new Error('Failed to create user');
-
-      const userId = authData.user.id;
-
-      // 2. Create profile
-      const { error: profileError } = await supabase.from('profiles').insert({
-        user_id: userId,
-        email,
-        full_name: fullName,
-        phone: phone || null,
-      });
-
-      if (profileError) throw profileError;
-
-      // 3. Assign role
-      const { error: roleError } = await supabase.from('user_roles').insert({
-        user_id: userId,
-        role: userType,
-      });
-
-      if (roleError) throw roleError;
-
-      // 4. Create role-specific record
-      if (userType === 'student') {
-        const { error } = await supabase.from('students').insert({
-          user_id: userId,
-          class_id: classId || null,
-          roll_number: rollNumber || null,
-          admission_number: admissionNumber || null,
-        });
-        if (error) throw error;
-      } else if (userType === 'teacher') {
-        const { error } = await supabase.from('teachers').insert({
-          user_id: userId,
-          employee_id: employeeId || null,
-          designation: designation || null,
-          qualification: qualification || null,
-        });
-        if (error) throw error;
-      } else {
-        const { error } = await supabase.from('parents').insert({
-          user_id: userId,
-          occupation: occupation || null,
-          relationship: relationship || null,
-        });
-        if (error) throw error;
-      }
+      if (error) throw error;
+      if (data?.error) throw new Error(data.error);
 
       toast.success(`${userType.charAt(0).toUpperCase() + userType.slice(1)} created successfully!`);
       
@@ -205,7 +169,7 @@ export function CreateUserDialog({ open, onOpenChange, userType }: CreateUserDia
     } catch (error: any) {
       console.error('Error creating user:', error);
       
-      if (error.message?.includes('already registered')) {
+      if (error.message?.includes('already registered') || error.message?.includes('already been registered')) {
         toast.error('A user with this email already exists');
       } else {
         toast.error(error.message || 'Failed to create user');
