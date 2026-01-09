@@ -8,6 +8,7 @@ import { UserManagement } from '@/components/admin/UserManagement';
 import { ClassManagement } from '@/components/admin/ClassManagement';
 import { TimetableManagement } from '@/components/admin/TimetableManagement';
 import { AnnouncementManagement } from '@/components/admin/AnnouncementManagement';
+import { AttendanceManagement } from '@/components/admin/AttendanceManagement';
 
 export default function AdminDashboard() {
   return (
@@ -20,6 +21,7 @@ export default function AdminDashboard() {
         <Route path="teachers" element={<UserManagement defaultTab="teachers" />} />
         <Route path="classes" element={<ClassManagement />} />
         <Route path="timetable" element={<TimetableManagement />} />
+        <Route path="attendance" element={<AttendanceManagement />} />
         <Route path="announcements" element={<AnnouncementManagement />} />
         <Route path="fees" element={<ComingSoonPage title="Fee Configuration" />} />
         <Route path="reports" element={<ComingSoonPage title="Reports" />} />

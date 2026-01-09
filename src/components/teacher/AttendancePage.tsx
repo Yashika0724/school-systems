@@ -26,7 +26,8 @@ interface StudentAttendance {
 export function AttendancePage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const { data: teacherClasses, isLoading: classesLoading } = useTeacherClasses();
+  // Only fetch classes where teacher is class teacher
+  const { data: teacherClasses, isLoading: classesLoading } = useTeacherClasses(true);
   
   const [selectedClass, setSelectedClass] = useState<TeacherClass | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
@@ -382,7 +383,8 @@ export function AttendancePage() {
             <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
             <h3 className="font-semibold text-lg mb-2">No Classes Assigned</h3>
             <p className="text-muted-foreground">
-              You don't have any classes assigned yet. Please contact the administrator.
+              You are not a class teacher for any class. Only class teachers can mark attendance.
+              Please contact the administrator if you believe this is an error.
             </p>
           </CardContent>
         </Card>
