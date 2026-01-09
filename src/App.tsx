@@ -22,6 +22,15 @@ import ParentDemo from "./pages/demo/ParentDemo";
 import TeacherDemo from "./pages/demo/TeacherDemo";
 import AdminDemo from "./pages/demo/AdminDemo";
 
+// Real Dashboard Pages
+import StudentDashboard from "./pages/dashboards/StudentDashboard";
+import ParentDashboard from "./pages/dashboards/ParentDashboard";
+import TeacherDashboard from "./pages/dashboards/TeacherDashboard";
+import AdminDashboard from "./pages/dashboards/AdminDashboard";
+
+// Auth Components
+import { ProtectedRoute } from "./components/auth/ProtectedRoute";
+
 const queryClient = new QueryClient();
 
 const App = () => (
@@ -47,6 +56,28 @@ const App = () => (
               <Route path="/demo/parent/*" element={<ParentDemo />} />
               <Route path="/demo/teacher/*" element={<TeacherDemo />} />
               <Route path="/demo/admin/*" element={<AdminDemo />} />
+              
+              {/* Protected Dashboard Routes */}
+              <Route path="/student/*" element={
+                <ProtectedRoute allowedRole="student">
+                  <StudentDashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/parent/*" element={
+                <ProtectedRoute allowedRole="parent">
+                  <ParentDashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/teacher/*" element={
+                <ProtectedRoute allowedRole="teacher">
+                  <TeacherDashboard />
+                </ProtectedRoute>
+              } />
+              <Route path="/admin/*" element={
+                <ProtectedRoute allowedRole="admin">
+                  <AdminDashboard />
+                </ProtectedRoute>
+              } />
               
               {/* Catch-all */}
               <Route path="*" element={<NotFound />} />
