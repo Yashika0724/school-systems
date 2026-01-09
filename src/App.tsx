@@ -27,6 +27,7 @@ import StudentDashboard from "./pages/dashboards/StudentDashboard";
 import ParentDashboard from "./pages/dashboards/ParentDashboard";
 import TeacherDashboard from "./pages/dashboards/TeacherDashboard";
 import AdminDashboard from "./pages/dashboards/AdminDashboard";
+import AdminSetup from "./pages/AdminSetup";
 
 // Auth Components
 import { ProtectedRoute } from "./components/auth/ProtectedRoute";
@@ -50,6 +51,9 @@ const App = () => (
               <Route path="/login/parent" element={<ParentLogin />} />
               <Route path="/login/teacher" element={<TeacherLogin />} />
               <Route path="/login/admin" element={<AdminLogin />} />
+              
+              {/* Admin Setup (only works when no admin exists) */}
+              <Route path="/admin/setup" element={<AdminSetup />} />
               
               {/* Demo Routes */}
               <Route path="/demo/student/*" element={<StudentDemo />} />
