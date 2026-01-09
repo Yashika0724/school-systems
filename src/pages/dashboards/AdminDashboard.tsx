@@ -5,6 +5,7 @@ import { AdminDashboardContent } from '@/components/admin/AdminDashboardContent'
 import { ProfilePage } from '@/components/profile/ProfilePage';
 import { ComingSoonPage } from '@/components/shared/ComingSoonPage';
 import { UserManagement } from '@/components/admin/UserManagement';
+import { ClassManagement } from '@/components/admin/ClassManagement';
 
 export default function AdminDashboard() {
   return (
@@ -15,7 +16,7 @@ export default function AdminDashboard() {
         <Route path="students" element={<UserManagement defaultTab="students" />} />
         <Route path="parents" element={<UserManagement defaultTab="parents" />} />
         <Route path="teachers" element={<UserManagement defaultTab="teachers" />} />
-        <Route path="classes" element={<ComingSoonPage title="Class Management" />} />
+        <Route path="classes" element={<ClassManagement />} />
         <Route path="fees" element={<ComingSoonPage title="Fee Configuration" />} />
         <Route path="reports" element={<ComingSoonPage title="Reports" />} />
         <Route path="settings" element={<ComingSoonPage title="Settings" />} />
