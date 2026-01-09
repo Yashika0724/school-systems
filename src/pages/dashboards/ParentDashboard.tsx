@@ -4,6 +4,9 @@ import { ParentSidebar } from '@/components/dashboard/ParentSidebar';
 import { ParentDashboardContent } from '@/components/parent/ParentDashboardContent';
 import { ProfilePage } from '@/components/profile/ProfilePage';
 import { ComingSoonPage } from '@/components/shared/ComingSoonPage';
+import { ParentAttendancePage } from '@/components/parent/ParentAttendancePage';
+import { ParentMarksPage } from '@/components/parent/ParentMarksPage';
+import { ParentHomeworkPage } from '@/components/parent/ParentHomeworkPage';
 
 export default function ParentDashboard() {
   return (
@@ -12,8 +15,9 @@ export default function ParentDashboard() {
         <Route path="/" element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<ParentDashboardContent isDemo={false} />} />
         <Route path="children" element={<ComingSoonPage title="My Children" />} />
-        <Route path="attendance" element={<ComingSoonPage title="Attendance" />} />
-        <Route path="marks" element={<ComingSoonPage title="Academic Progress" />} />
+        <Route path="attendance" element={<ParentAttendancePage />} />
+        <Route path="marks" element={<ParentMarksPage />} />
+        <Route path="homework" element={<ParentHomeworkPage />} />
         <Route path="fees" element={<ComingSoonPage title="Fee Payments" />} />
         <Route path="messages" element={<ComingSoonPage title="Messages" />} />
         <Route path="profile" element={<ProfilePage />} />
