@@ -14,6 +14,84 @@ export type Database = {
   }
   public: {
     Tables: {
+      announcement_targets: {
+        Row: {
+          announcement_id: string
+          class_id: string | null
+          created_at: string
+          id: string
+        }
+        Insert: {
+          announcement_id: string
+          class_id?: string | null
+          created_at?: string
+          id?: string
+        }
+        Update: {
+          announcement_id?: string
+          class_id?: string | null
+          created_at?: string
+          id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "announcement_targets_announcement_id_fkey"
+            columns: ["announcement_id"]
+            isOneToOne: false
+            referencedRelation: "announcements"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "announcement_targets_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      announcements: {
+        Row: {
+          announcement_type: string
+          content: string
+          created_at: string
+          created_by: string
+          end_date: string | null
+          id: string
+          is_active: boolean | null
+          priority: string | null
+          start_date: string | null
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          announcement_type?: string
+          content: string
+          created_at?: string
+          created_by: string
+          end_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          priority?: string | null
+          start_date?: string | null
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          announcement_type?: string
+          content?: string
+          created_at?: string
+          created_by?: string
+          end_date?: string | null
+          id?: string
+          is_active?: boolean | null
+          priority?: string | null
+          start_date?: string | null
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       attendance: {
         Row: {
           class_id: string
@@ -61,6 +139,86 @@ export type Database = {
             columns: ["student_id"]
             isOneToOne: false
             referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      class_sessions: {
+        Row: {
+          class_id: string
+          created_at: string
+          description: string | null
+          id: string
+          learning_objectives: string | null
+          prerequisites: string | null
+          resources: string | null
+          session_date: string
+          status: string | null
+          subject_id: string
+          teacher_id: string
+          timetable_slot_id: string | null
+          topic: string | null
+          updated_at: string
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          learning_objectives?: string | null
+          prerequisites?: string | null
+          resources?: string | null
+          session_date: string
+          status?: string | null
+          subject_id: string
+          teacher_id: string
+          timetable_slot_id?: string | null
+          topic?: string | null
+          updated_at?: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          learning_objectives?: string | null
+          prerequisites?: string | null
+          resources?: string | null
+          session_date?: string
+          status?: string | null
+          subject_id?: string
+          teacher_id?: string
+          timetable_slot_id?: string | null
+          topic?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "class_sessions_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "class_sessions_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "class_sessions_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "teachers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "class_sessions_timetable_slot_id_fkey"
+            columns: ["timetable_slot_id"]
+            isOneToOne: false
+            referencedRelation: "timetable_slots"
             referencedColumns: ["id"]
           },
         ]
@@ -567,6 +725,70 @@ export type Database = {
           user_id?: string
         }
         Relationships: []
+      }
+      timetable_slots: {
+        Row: {
+          class_id: string
+          created_at: string
+          day_of_week: number
+          end_time: string
+          id: string
+          room: string | null
+          slot_number: number
+          start_time: string
+          subject_id: string | null
+          teacher_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          day_of_week: number
+          end_time: string
+          id?: string
+          room?: string | null
+          slot_number: number
+          start_time: string
+          subject_id?: string | null
+          teacher_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          day_of_week?: number
+          end_time?: string
+          id?: string
+          room?: string | null
+          slot_number?: number
+          start_time?: string
+          subject_id?: string | null
+          teacher_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "timetable_slots_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "timetable_slots_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "timetable_slots_teacher_id_fkey"
+            columns: ["teacher_id"]
+            isOneToOne: false
+            referencedRelation: "teachers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {

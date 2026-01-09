@@ -23,9 +23,9 @@ const navItems = [
   { icon: Users, label: 'Parents', path: '/admin/parents' },
   { icon: BookOpen, label: 'Teachers', path: '/admin/teachers' },
   { icon: School, label: 'Classes', path: '/admin/classes' },
+  { icon: Settings, label: 'Timetable', path: '/admin/timetable' },
+  { icon: BarChart3, label: 'Announcements', path: '/admin/announcements' },
   { icon: CreditCard, label: 'Fee Configuration', path: '/admin/fees' },
-  { icon: BarChart3, label: 'Reports', path: '/admin/reports' },
-  { icon: Settings, label: 'Settings', path: '/admin/settings' },
 ];
 
 const demoNavItems = navItems.map(item => ({
