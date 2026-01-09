@@ -23,8 +23,8 @@ const navItems = [
   { icon: ClipboardCheck, label: 'Attendance', path: '/teacher/attendance' },
   { icon: FileText, label: 'Marks Entry', path: '/teacher/marks' },
   { icon: PenTool, label: 'Homework', path: '/teacher/homework' },
+  { icon: Calendar, label: 'Session Planning', path: '/teacher/sessions' },
   { icon: Bell, label: 'Announcements', path: '/teacher/announcements' },
-  { icon: Calendar, label: 'Leave Requests', path: '/teacher/leaves' },
   { icon: User, label: 'My Profile', path: '/teacher/profile' },
 ];
 
