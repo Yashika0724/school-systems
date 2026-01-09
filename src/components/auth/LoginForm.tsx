@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { Eye, EyeOff, Mail, Lock, ArrowLeft, Play } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -8,6 +8,8 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { z } from 'zod';
+
+type UserRole = 'student' | 'parent' | 'teacher' | 'admin';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -31,7 +33,20 @@ export function LoginForm({ userType, title, description, icon, gradientClass }:
   const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
   
   const navigate = useNavigate();
-  const { signIn, resetPassword } = useAuth();
+  const { signIn, resetPassword, userRole, loading, user } = useAuth();
+
+  // Redirect when user is authenticated and role is loaded
+  useEffect(() => {
+    if (!loading && user && userRole) {
+      const dashboardPaths: Record<UserRole, string> = {
+        student: '/student/dashboard',
+        parent: '/parent/dashboard',
+        teacher: '/teacher/dashboard',
+        admin: '/admin/dashboard',
+      };
+      navigate(dashboardPaths[userRole], { replace: true });
+    }
+  }, [userRole, loading, user, navigate]);
 
   const validateForm = () => {
     try {
