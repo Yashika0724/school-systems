@@ -30,11 +30,11 @@ export interface ClassStudent {
   };
 }
 
-export function useTeacherClasses() {
+export function useTeacherClasses(classTeacherOnly: boolean = false) {
   const { user } = useAuth();
 
   return useQuery({
-    queryKey: ['teacher-classes', user?.id],
+    queryKey: ['teacher-classes', user?.id, classTeacherOnly],
     queryFn: async (): Promise<TeacherClass[]> => {
       if (!user) return [];
 
@@ -48,7 +48,7 @@ export function useTeacherClasses() {
       if (teacherError || !teacher) return [];
 
       // Then get assigned classes
-      const { data, error } = await supabase
+      let query = supabase
         .from('teacher_classes')
         .select(`
           id,
@@ -59,6 +59,13 @@ export function useTeacherClasses() {
           subject:subjects(id, name, code)
         `)
         .eq('teacher_id', teacher.id);
+      
+      // Filter to only class teacher assignments if requested
+      if (classTeacherOnly) {
+        query = query.eq('is_class_teacher', true);
+      }
+      
+      const { data, error } = await query;
 
       if (error) {
         console.error('Error fetching teacher classes:', error);

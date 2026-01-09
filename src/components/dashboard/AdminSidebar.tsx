@@ -6,6 +6,9 @@ import {
   GraduationCap,
   BookOpen,
   School,
+  Calendar,
+  ClipboardCheck,
+  Megaphone,
   CreditCard,
   BarChart3,
   Settings,
@@ -23,8 +26,9 @@ const navItems = [
   { icon: Users, label: 'Parents', path: '/admin/parents' },
   { icon: BookOpen, label: 'Teachers', path: '/admin/teachers' },
   { icon: School, label: 'Classes', path: '/admin/classes' },
-  { icon: Settings, label: 'Timetable', path: '/admin/timetable' },
-  { icon: BarChart3, label: 'Announcements', path: '/admin/announcements' },
+  { icon: Calendar, label: 'Timetable', path: '/admin/timetable' },
+  { icon: ClipboardCheck, label: 'Attendance', path: '/admin/attendance' },
+  { icon: Megaphone, label: 'Announcements', path: '/admin/announcements' },
   { icon: CreditCard, label: 'Fee Configuration', path: '/admin/fees' },
 ];
 

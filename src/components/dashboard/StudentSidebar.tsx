@@ -7,6 +7,7 @@ import {
   Calendar,
   BookOpen,
   FolderOpen,
+  Megaphone,
   User,
   LogOut,
 } from 'lucide-react';
@@ -22,6 +23,7 @@ const navItems = [
   { icon: FileText, label: 'Marks & Reports', path: '/student/marks' },
   { icon: Calendar, label: 'Timetable', path: '/student/timetable' },
   { icon: BookOpen, label: 'Homework', path: '/student/homework' },
+  { icon: Megaphone, label: 'Announcements', path: '/student/announcements' },
   { icon: FolderOpen, label: 'Resources', path: '/student/resources' },
   { icon: User, label: 'Profile', path: '/student/profile' },
 ];

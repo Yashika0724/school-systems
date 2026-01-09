@@ -8,6 +8,8 @@ import { AttendancePage } from '@/components/teacher/AttendancePage';
 import { MarksEntryPage } from '@/components/teacher/MarksEntryPage';
 import { HomeworkPage } from '@/components/teacher/HomeworkPage';
 import { SessionPlanningPage } from '@/components/teacher/SessionPlanningPage';
+import { TeacherSchedulePage } from '@/components/teacher/TeacherSchedulePage';
+import { TeacherAnnouncementsPage } from '@/components/teacher/TeacherAnnouncementsPage';
 
 export default function TeacherDashboard() {
   return (
@@ -20,8 +22,8 @@ export default function TeacherDashboard() {
         <Route path="marks" element={<MarksEntryPage />} />
         <Route path="homework" element={<HomeworkPage />} />
         <Route path="sessions" element={<SessionPlanningPage />} />
-        <Route path="schedule" element={<ComingSoonPage title="Schedule" />} />
-        <Route path="announcements" element={<ComingSoonPage title="Announcements" />} />
+        <Route path="schedule" element={<TeacherSchedulePage />} />
+        <Route path="announcements" element={<TeacherAnnouncementsPage />} />
         <Route path="profile" element={<ProfilePage />} />
         <Route path="*" element={<Navigate to="dashboard" replace />} />
       </Routes>
