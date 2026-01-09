@@ -4,6 +4,9 @@ import { StudentSidebar } from '@/components/dashboard/StudentSidebar';
 import { StudentDashboardContent } from '@/components/student/StudentDashboardContent';
 import { ProfilePage } from '@/components/profile/ProfilePage';
 import { ComingSoonPage } from '@/components/shared/ComingSoonPage';
+import { StudentAttendancePage } from '@/components/student/StudentAttendancePage';
+import { StudentMarksPage } from '@/components/student/StudentMarksPage';
+import { StudentHomeworkPage } from '@/components/student/StudentHomeworkPage';
 
 export default function StudentDashboard() {
   return (
@@ -11,10 +14,10 @@ export default function StudentDashboard() {
       <Routes>
         <Route path="/" element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<StudentDashboardContent isDemo={false} />} />
-        <Route path="attendance" element={<ComingSoonPage title="Attendance" />} />
-        <Route path="marks" element={<ComingSoonPage title="Marks & Results" />} />
+        <Route path="attendance" element={<StudentAttendancePage />} />
+        <Route path="marks" element={<StudentMarksPage />} />
         <Route path="timetable" element={<ComingSoonPage title="Timetable" />} />
-        <Route path="homework" element={<ComingSoonPage title="Homework" />} />
+        <Route path="homework" element={<StudentHomeworkPage />} />
         <Route path="exams" element={<ComingSoonPage title="Examinations" />} />
         <Route path="fees" element={<ComingSoonPage title="Fee Details" />} />
         <Route path="profile" element={<ProfilePage />} />
