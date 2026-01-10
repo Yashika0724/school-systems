@@ -1,4 +1,4 @@
-import { GraduationCap, Mail, Phone, MapPin } from 'lucide-react';
+import { GraduationCap, Mail, Phone, MapPin, Sparkles } from 'lucide-react';
 
 export function Footer() {
   return (
@@ -8,14 +8,17 @@ export function Footer() {
           {/* Brand */}
           <div className="md:col-span-2">
             <div className="flex items-center gap-2 mb-4">
-              <GraduationCap className="h-8 w-8" />
+              <Sparkles className="h-8 w-8" />
               <div>
-                <h3 className="font-bold text-xl">Vidya Setu</h3>
-                <p className="text-xs opacity-70">विद्या सेतु - Bridge to Knowledge</p>
+                <h3 className="font-bold text-xl">
+                  <span className="text-blue-400">knct</span>
+                  <span className="text-orange-400">ED</span>
+                </h3>
+                <p className="text-xs opacity-70">Connecting Education, Empowering Futures</p>
               </div>
             </div>
             <p className="text-sm opacity-70 max-w-md">
-              A comprehensive school management system designed for Indian schools. 
+              A comprehensive school management system designed for modern schools. 
               Streamline administration, enhance communication, and improve educational outcomes.
             </p>
           </div>
@@ -37,7 +40,7 @@ export function Footer() {
             <ul className="space-y-3 text-sm opacity-70">
               <li className="flex items-center gap-2">
                 <Mail className="h-4 w-4" />
-                info@vidyasetu.edu
+                info@kncted.edu
               </li>
               <li className="flex items-center gap-2">
                 <Phone className="h-4 w-4" />
@@ -51,8 +54,9 @@ export function Footer() {
           </div>
         </div>
 
-        <div className="border-t border-background/20 mt-8 pt-8 text-center text-sm opacity-50">
-          <p>© 2024 Vidya Setu. All rights reserved.</p>
+        <div className="border-t border-background/20 mt-8 pt-8 text-center text-sm">
+          <p className="opacity-50">© 2024 knctED. All rights reserved.</p>
+          <p className="mt-2 text-xs opacity-40">A product by <span className="font-semibold text-blue-400/80">BU Ventures</span></p>
         </div>
       </div>
     </footer>
