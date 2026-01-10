@@ -274,6 +274,226 @@ export type Database = {
         }
         Relationships: []
       }
+      fee_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_recurring: boolean | null
+          name: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_recurring?: boolean | null
+          name: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_recurring?: boolean | null
+          name?: string
+        }
+        Relationships: []
+      }
+      fee_invoice_items: {
+        Row: {
+          amount: number
+          category_id: string | null
+          created_at: string
+          description: string
+          id: string
+          invoice_id: string
+        }
+        Insert: {
+          amount: number
+          category_id?: string | null
+          created_at?: string
+          description: string
+          id?: string
+          invoice_id: string
+        }
+        Update: {
+          amount?: number
+          category_id?: string | null
+          created_at?: string
+          description?: string
+          id?: string
+          invoice_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fee_invoice_items_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "fee_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fee_invoice_items_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "fee_invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fee_invoices: {
+        Row: {
+          academic_year: string
+          created_at: string
+          due_date: string
+          id: string
+          invoice_number: string
+          month: number | null
+          notes: string | null
+          paid_amount: number | null
+          quarter: number | null
+          status: string
+          student_id: string
+          total_amount: number
+          updated_at: string
+        }
+        Insert: {
+          academic_year?: string
+          created_at?: string
+          due_date: string
+          id?: string
+          invoice_number: string
+          month?: number | null
+          notes?: string | null
+          paid_amount?: number | null
+          quarter?: number | null
+          status?: string
+          student_id: string
+          total_amount: number
+          updated_at?: string
+        }
+        Update: {
+          academic_year?: string
+          created_at?: string
+          due_date?: string
+          id?: string
+          invoice_number?: string
+          month?: number | null
+          notes?: string | null
+          paid_amount?: number | null
+          quarter?: number | null
+          status?: string
+          student_id?: string
+          total_amount?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fee_invoices_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fee_payments: {
+        Row: {
+          amount: number
+          created_at: string
+          id: string
+          invoice_id: string
+          notes: string | null
+          payment_date: string
+          payment_method: string
+          received_by: string | null
+          transaction_id: string | null
+        }
+        Insert: {
+          amount: number
+          created_at?: string
+          id?: string
+          invoice_id: string
+          notes?: string | null
+          payment_date?: string
+          payment_method?: string
+          received_by?: string | null
+          transaction_id?: string | null
+        }
+        Update: {
+          amount?: number
+          created_at?: string
+          id?: string
+          invoice_id?: string
+          notes?: string | null
+          payment_date?: string
+          payment_method?: string
+          received_by?: string | null
+          transaction_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fee_payments_invoice_id_fkey"
+            columns: ["invoice_id"]
+            isOneToOne: false
+            referencedRelation: "fee_invoices"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      fee_structures: {
+        Row: {
+          academic_year: string
+          amount: number
+          category_id: string
+          class_id: string
+          created_at: string
+          due_day: number | null
+          frequency: string
+          id: string
+          late_fee_amount: number | null
+          updated_at: string
+        }
+        Insert: {
+          academic_year?: string
+          amount: number
+          category_id: string
+          class_id: string
+          created_at?: string
+          due_day?: number | null
+          frequency?: string
+          id?: string
+          late_fee_amount?: number | null
+          updated_at?: string
+        }
+        Update: {
+          academic_year?: string
+          amount?: number
+          category_id?: string
+          class_id?: string
+          created_at?: string
+          due_day?: number | null
+          frequency?: string
+          id?: string
+          late_fee_amount?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fee_structures_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "fee_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "fee_structures_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       homework: {
         Row: {
           assigned_by: string
