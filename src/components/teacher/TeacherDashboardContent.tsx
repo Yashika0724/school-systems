@@ -8,6 +8,7 @@ import {
   Clock,
   Menu,
   AlertCircle,
+  Loader2,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,20 +18,72 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { demoTeacher } from '@/lib/demo-data';
 import { TeacherSidebar } from '@/components/dashboard/TeacherSidebar';
 import { useDemo } from '@/contexts/DemoContext';
+import { useTeacherDashboardData } from '@/hooks/useTeacherDashboard';
+import { Link } from 'react-router-dom';
 
 interface TeacherDashboardContentProps {
   isDemo?: boolean;
 }
 
 export function TeacherDashboardContent({ isDemo = false }: TeacherDashboardContentProps) {
-  const teacher = isDemo ? demoTeacher : demoTeacher;
   const { showDemoToast } = useDemo();
+  const {
+    teacher: realTeacher,
+    assignedClasses: realClasses,
+    todaySchedule: realSchedule,
+    pendingTasks: realPendingTasks,
+    recentStudents: realRecentStudents,
+    isLoading,
+  } = useTeacherDashboardData();
+
+  // Use demo data in demo mode
+  const teacher = isDemo ? demoTeacher : {
+    name: realTeacher?.name || 'Teacher',
+    avatar: realTeacher?.avatar,
+    designation: realTeacher?.designation || 'Teacher',
+  };
+
+  const assignedClasses = isDemo 
+    ? demoTeacher.assignedClasses 
+    : realClasses.map(c => ({
+        class: `${c.className}-${c.section}`,
+        subject: c.subjectName,
+        students: c.studentCount,
+        isClassTeacher: c.isClassTeacher,
+      }));
+
+  const todaySchedule = isDemo 
+    ? demoTeacher.todaySchedule 
+    : realSchedule.map(s => ({
+        period: s.period,
+        class: s.class,
+        subject: s.subject,
+        time: s.time,
+      }));
+
+  const pendingTasks = isDemo ? demoTeacher.pendingTasks : realPendingTasks;
+
+  const recentStudents = isDemo 
+    ? demoTeacher.recentStudents 
+    : realRecentStudents.map(s => ({
+        name: s.name,
+        class: s.class,
+        performance: s.performance,
+      }));
 
   const handleQuickAction = (action: string) => {
     if (isDemo) {
       showDemoToast(action);
     }
   };
+
+  if (!isDemo && isLoading) {
+    return (
+      <div className="flex items-center justify-center h-full min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 md:p-6 pb-20 lg:pb-6 space-y-6">
@@ -49,13 +102,13 @@ export function TeacherDashboardContent({ isDemo = false }: TeacherDashboardCont
           </Sheet>
           
           <div>
-            <h1 className="text-2xl font-bold">Welcome, {teacher.name.split(' ').slice(1).join(' ')}! 👋</h1>
+            <h1 className="text-2xl font-bold">Welcome, {teacher.name.split(' ').slice(-1)[0]}! 👋</h1>
             <p className="text-muted-foreground">{teacher.designation}</p>
           </div>
         </div>
 
         <Avatar className="h-12 w-12 border-2 border-primary">
-          <AvatarImage src={teacher.avatar} />
+          <AvatarImage src={teacher.avatar || undefined} />
           <AvatarFallback>{teacher.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
         </Avatar>
       </div>
@@ -65,13 +118,28 @@ export function TeacherDashboardContent({ isDemo = false }: TeacherDashboardCont
         <Button
           className="h-auto py-4 flex flex-col gap-2"
           onClick={() => handleQuickAction('Mark Attendance clicked')}
+          asChild={!isDemo}
         >
-          <ClipboardCheck className="h-6 w-6" />
-          <span>Mark Attendance</span>
-          {teacher.pendingTasks.attendanceToMark > 0 && (
-            <Badge variant="secondary" className="bg-white/20">
-              {teacher.pendingTasks.attendanceToMark} pending
-            </Badge>
+          {isDemo ? (
+            <>
+              <ClipboardCheck className="h-6 w-6" />
+              <span>Mark Attendance</span>
+              {pendingTasks.attendanceToMark > 0 && (
+                <Badge variant="secondary" className="bg-white/20">
+                  {pendingTasks.attendanceToMark} pending
+                </Badge>
+              )}
+            </>
+          ) : (
+            <Link to="/teacher/attendance" className="flex flex-col gap-2 items-center">
+              <ClipboardCheck className="h-6 w-6" />
+              <span>Mark Attendance</span>
+              {pendingTasks.attendanceToMark > 0 && (
+                <Badge variant="secondary" className="bg-white/20">
+                  {pendingTasks.attendanceToMark} pending
+                </Badge>
+              )}
+            </Link>
           )}
         </Button>
 
@@ -79,22 +147,47 @@ export function TeacherDashboardContent({ isDemo = false }: TeacherDashboardCont
           variant="outline"
           className="h-auto py-4 flex flex-col gap-2"
           onClick={() => handleQuickAction('Upload Marks clicked')}
+          asChild={!isDemo}
         >
-          <FileText className="h-6 w-6" />
-          <span>Upload Marks</span>
+          {isDemo ? (
+            <>
+              <FileText className="h-6 w-6" />
+              <span>Upload Marks</span>
+            </>
+          ) : (
+            <Link to="/teacher/marks" className="flex flex-col gap-2 items-center">
+              <FileText className="h-6 w-6" />
+              <span>Upload Marks</span>
+            </Link>
+          )}
         </Button>
 
         <Button
           variant="outline"
           className="h-auto py-4 flex flex-col gap-2"
           onClick={() => handleQuickAction('Post Homework clicked')}
+          asChild={!isDemo}
         >
-          <PenTool className="h-6 w-6" />
-          <span>Post Homework</span>
-          {teacher.pendingTasks.homeworkToReview > 0 && (
-            <Badge variant="secondary">
-              {teacher.pendingTasks.homeworkToReview} to review
-            </Badge>
+          {isDemo ? (
+            <>
+              <PenTool className="h-6 w-6" />
+              <span>Post Homework</span>
+              {pendingTasks.homeworkToReview > 0 && (
+                <Badge variant="secondary">
+                  {pendingTasks.homeworkToReview} to review
+                </Badge>
+              )}
+            </>
+          ) : (
+            <Link to="/teacher/homework" className="flex flex-col gap-2 items-center">
+              <PenTool className="h-6 w-6" />
+              <span>Post Homework</span>
+              {pendingTasks.homeworkToReview > 0 && (
+                <Badge variant="secondary">
+                  {pendingTasks.homeworkToReview} to review
+                </Badge>
+              )}
+            </Link>
           )}
         </Button>
 
@@ -105,9 +198,9 @@ export function TeacherDashboardContent({ isDemo = false }: TeacherDashboardCont
         >
           <Calendar className="h-6 w-6" />
           <span>Leave Requests</span>
-          {teacher.pendingTasks.leaveRequests > 0 && (
+          {pendingTasks.leaveRequests > 0 && (
             <Badge variant="destructive">
-              {teacher.pendingTasks.leaveRequests} pending
+              {pendingTasks.leaveRequests} pending
             </Badge>
           )}
         </Button>
@@ -123,23 +216,27 @@ export function TeacherDashboardContent({ isDemo = false }: TeacherDashboardCont
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {teacher.todaySchedule.map((period, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <span className="font-bold text-primary">{period.period}</span>
+            {todaySchedule.length > 0 ? (
+              todaySchedule.map((period, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center">
+                      <span className="font-bold text-primary">{period.period}</span>
+                    </div>
+                    <div>
+                      <p className="font-medium">Class {period.class}</p>
+                      <p className="text-sm text-muted-foreground">{period.subject}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium">Class {period.class}</p>
-                    <p className="text-sm text-muted-foreground">{period.subject}</p>
-                  </div>
+                  <span className="text-sm text-muted-foreground">{period.time}</span>
                 </div>
-                <span className="text-sm text-muted-foreground">{period.time}</span>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="text-center text-muted-foreground py-4">No classes scheduled today</p>
+            )}
           </CardContent>
         </Card>
 
@@ -152,36 +249,40 @@ export function TeacherDashboardContent({ isDemo = false }: TeacherDashboardCont
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
-            {teacher.assignedClasses.map((cls, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
-              >
-                <div className="flex items-center gap-3">
-                  <div className="h-10 w-10 rounded-lg bg-purple-100 flex items-center justify-center">
-                    <BookOpen className="h-5 w-5 text-purple-600" />
+            {assignedClasses.length > 0 ? (
+              assignedClasses.map((cls, index) => (
+                <div
+                  key={index}
+                  className="flex items-center justify-between p-3 rounded-lg bg-muted/50"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="h-10 w-10 rounded-lg bg-purple-100 flex items-center justify-center">
+                      <BookOpen className="h-5 w-5 text-purple-600" />
+                    </div>
+                    <div>
+                      <p className="font-medium">Class {cls.class}</p>
+                      <p className="text-sm text-muted-foreground">{cls.subject}</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="font-medium">Class {cls.class}</p>
-                    <p className="text-sm text-muted-foreground">{cls.subject}</p>
+                  <div className="text-right">
+                    <p className="text-sm font-medium">{cls.students} students</p>
+                    {cls.isClassTeacher && (
+                      <Badge variant="default" className="text-xs">Class Teacher</Badge>
+                    )}
                   </div>
                 </div>
-                <div className="text-right">
-                  <p className="text-sm font-medium">{cls.students} students</p>
-                  {cls.isClassTeacher && (
-                    <Badge variant="default" className="text-xs">Class Teacher</Badge>
-                  )}
-                </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="text-center text-muted-foreground py-4">No classes assigned</p>
+            )}
           </CardContent>
         </Card>
       </div>
 
       {/* Pending Tasks Alert */}
-      {(teacher.pendingTasks.attendanceToMark > 0 || 
-        teacher.pendingTasks.homeworkToReview > 0 || 
-        teacher.pendingTasks.leaveRequests > 0) && (
+      {(pendingTasks.attendanceToMark > 0 || 
+        pendingTasks.homeworkToReview > 0 || 
+        pendingTasks.leaveRequests > 0) && (
         <Card className="border-orange-200 bg-orange-50">
           <CardContent className="p-4">
             <div className="flex items-start gap-3">
@@ -189,14 +290,14 @@ export function TeacherDashboardContent({ isDemo = false }: TeacherDashboardCont
               <div>
                 <p className="font-medium text-orange-800">Pending Tasks</p>
                 <ul className="text-sm text-orange-700 mt-1 space-y-1">
-                  {teacher.pendingTasks.attendanceToMark > 0 && (
-                    <li>• {teacher.pendingTasks.attendanceToMark} classes need attendance marking</li>
+                  {pendingTasks.attendanceToMark > 0 && (
+                    <li>• {pendingTasks.attendanceToMark} classes need attendance marking</li>
                   )}
-                  {teacher.pendingTasks.homeworkToReview > 0 && (
-                    <li>• {teacher.pendingTasks.homeworkToReview} homework submissions to review</li>
+                  {pendingTasks.homeworkToReview > 0 && (
+                    <li>• {pendingTasks.homeworkToReview} homework submissions to review</li>
                   )}
-                  {teacher.pendingTasks.leaveRequests > 0 && (
-                    <li>• {teacher.pendingTasks.leaveRequests} student leave requests pending</li>
+                  {pendingTasks.leaveRequests > 0 && (
+                    <li>• {pendingTasks.leaveRequests} student leave requests pending</li>
                   )}
                 </ul>
               </div>
@@ -214,33 +315,37 @@ export function TeacherDashboardContent({ isDemo = false }: TeacherDashboardCont
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-4 overflow-x-auto pb-2">
-            {teacher.recentStudents.map((student, index) => (
-              <div
-                key={index}
-                className="flex-shrink-0 w-40 p-4 rounded-lg bg-muted/50 text-center"
-              >
-                <Avatar className="h-12 w-12 mx-auto mb-2">
-                  <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${student.name}`} />
-                  <AvatarFallback>{student.name[0]}</AvatarFallback>
-                </Avatar>
-                <p className="font-medium text-sm">{student.name}</p>
-                <p className="text-xs text-muted-foreground">Class {student.class}</p>
-                <Badge
-                  variant={
-                    student.performance === 'Excellent'
-                      ? 'default'
-                      : student.performance === 'Good'
-                      ? 'secondary'
-                      : 'outline'
-                  }
-                  className="mt-2 text-xs"
+          {recentStudents.length > 0 ? (
+            <div className="flex gap-4 overflow-x-auto pb-2">
+              {recentStudents.map((student, index) => (
+                <div
+                  key={index}
+                  className="flex-shrink-0 w-40 p-4 rounded-lg bg-muted/50 text-center"
                 >
-                  {student.performance}
-                </Badge>
-              </div>
-            ))}
-          </div>
+                  <Avatar className="h-12 w-12 mx-auto mb-2">
+                    <AvatarImage src={`https://api.dicebear.com/7.x/avataaars/svg?seed=${student.name}`} />
+                    <AvatarFallback>{student.name[0]}</AvatarFallback>
+                  </Avatar>
+                  <p className="font-medium text-sm">{student.name}</p>
+                  <p className="text-xs text-muted-foreground">Class {student.class}</p>
+                  <Badge
+                    variant={
+                      student.performance === 'Excellent'
+                        ? 'default'
+                        : student.performance === 'Good'
+                        ? 'secondary'
+                        : 'outline'
+                    }
+                    className="mt-2 text-xs"
+                  >
+                    {student.performance}
+                  </Badge>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="text-center text-muted-foreground py-4">No recent student activity</p>
+          )}
         </CardContent>
       </Card>
     </div>
