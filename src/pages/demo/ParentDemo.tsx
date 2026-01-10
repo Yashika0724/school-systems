@@ -6,6 +6,7 @@ import { MobileNav } from '@/components/dashboard/MobileNav';
 import { useDemo } from '@/contexts/DemoContext';
 import { ParentDashboardContent } from '@/components/parent/ParentDashboardContent';
 import { ComingSoonPage } from '@/components/shared/ComingSoonPage';
+import { ParentFeePage } from '@/components/parent/ParentFeePage';
 
 export default function ParentDemo() {
   const { setDemoMode } = useDemo();
@@ -22,9 +23,8 @@ export default function ParentDemo() {
           <Route path="dashboard" element={<ParentDashboardContent isDemo />} />
           <Route path="attendance" element={<ComingSoonPage title="Children's Attendance" />} />
           <Route path="marks" element={<ComingSoonPage title="Marks & Reports" />} />
-          <Route path="fees" element={<ComingSoonPage title="Fee Management" badge="Under Development" />} />
-          <Route path="leaves" element={<ComingSoonPage title="Leave Applications" />} />
-          <Route path="announcements" element={<ComingSoonPage title="Announcements" />} />
+          <Route path="homework" element={<ComingSoonPage title="Homework" />} />
+          <Route path="fees" element={<ParentFeePage />} />
           <Route path="messages" element={<ComingSoonPage title="Contact Teachers" />} />
           <Route path="profile" element={<ComingSoonPage title="My Profile" />} />
         </Routes>

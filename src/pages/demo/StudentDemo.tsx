@@ -6,6 +6,7 @@ import { MobileNav } from '@/components/dashboard/MobileNav';
 import { useDemo } from '@/contexts/DemoContext';
 import { StudentDashboardContent } from '@/components/student/StudentDashboardContent';
 import { ComingSoonPage } from '@/components/shared/ComingSoonPage';
+import { StudentFeePage } from '@/components/student/StudentFeePage';
 
 export default function StudentDemo() {
   const { setDemoMode } = useDemo();
@@ -24,7 +25,8 @@ export default function StudentDemo() {
           <Route path="marks" element={<ComingSoonPage title="Marks & Reports" />} />
           <Route path="timetable" element={<ComingSoonPage title="Timetable" />} />
           <Route path="homework" element={<ComingSoonPage title="Homework" />} />
-          <Route path="resources" element={<ComingSoonPage title="Resources" />} />
+          <Route path="fees" element={<StudentFeePage />} />
+          <Route path="announcements" element={<ComingSoonPage title="Announcements" />} />
           <Route path="profile" element={<ComingSoonPage title="My Profile" />} />
         </Routes>
       </DashboardLayout>
