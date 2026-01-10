@@ -1,5 +1,4 @@
 import {
-  GraduationCap,
   ClipboardCheck,
   FileText,
   BookOpen,
@@ -14,6 +13,8 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { demoStudent } from '@/lib/demo-data';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { StudentSidebar } from '@/components/dashboard/StudentSidebar';
+import { AnnouncementCarousel } from '@/components/shared/AnnouncementCarousel';
+import { useStudentAnnouncements } from '@/hooks/useAnnouncements';
 
 interface StudentDashboardContentProps {
   isDemo?: boolean;
@@ -21,6 +22,7 @@ interface StudentDashboardContentProps {
 
 export function StudentDashboardContent({ isDemo = false }: StudentDashboardContentProps) {
   const student = isDemo ? demoStudent : demoStudent; // In real app, fetch from auth context
+  const { data: announcements = [] } = useStudentAnnouncements();
 
   return (
     <div className="p-4 md:p-6 pb-20 lg:pb-6 space-y-6">
@@ -49,6 +51,11 @@ export function StudentDashboardContent({ isDemo = false }: StudentDashboardCont
           <AvatarFallback>{student.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
         </Avatar>
       </div>
+
+      {/* Announcements Carousel */}
+      {announcements.length > 0 && (
+        <AnnouncementCarousel announcements={announcements} />
+      )}
 
       {/* Quick Stats */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
