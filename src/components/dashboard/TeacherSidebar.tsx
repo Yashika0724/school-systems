@@ -8,6 +8,8 @@ import {
   PenTool,
   Bell,
   Calendar,
+  CalendarDays,
+  UserCheck,
   User,
   LogOut,
 } from 'lucide-react';
@@ -25,6 +27,8 @@ const navItems = [
   { icon: PenTool, label: 'Homework', path: '/teacher/homework' },
   { icon: Calendar, label: 'Session Planning', path: '/teacher/sessions' },
   { icon: Bell, label: 'Announcements', path: '/teacher/announcements' },
+  { icon: CalendarDays, label: 'My Leave', path: '/teacher/leave' },
+  { icon: UserCheck, label: 'Leave Approvals', path: '/teacher/leave-approvals' },
   { icon: User, label: 'My Profile', path: '/teacher/profile' },
 ];
 

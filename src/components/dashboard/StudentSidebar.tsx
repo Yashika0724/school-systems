@@ -5,6 +5,7 @@ import {
   ClipboardCheck,
   FileText,
   Calendar,
+  CalendarDays,
   BookOpen,
   CreditCard,
   Megaphone,
@@ -25,6 +26,7 @@ const navItems = [
   { icon: BookOpen, label: 'Homework', path: '/student/homework' },
   { icon: CreditCard, label: 'Fee Details', path: '/student/fees' },
   { icon: Megaphone, label: 'Announcements', path: '/student/announcements' },
+  { icon: CalendarDays, label: 'Leave Requests', path: '/student/leave' },
   { icon: User, label: 'Profile', path: '/student/profile' },
 ];
 

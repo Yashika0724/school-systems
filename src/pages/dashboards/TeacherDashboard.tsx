@@ -10,6 +10,9 @@ import { HomeworkPage } from '@/components/teacher/HomeworkPage';
 import { SessionPlanningPage } from '@/components/teacher/SessionPlanningPage';
 import { TeacherSchedulePage } from '@/components/teacher/TeacherSchedulePage';
 import { TeacherAnnouncementsPage } from '@/components/teacher/TeacherAnnouncementsPage';
+import { TeacherClassesPage } from '@/components/teacher/TeacherClassesPage';
+import { TeacherLeavePage } from '@/components/teacher/TeacherLeavePage';
+import { TeacherLeaveApprovalsPage } from '@/components/teacher/TeacherLeaveApprovalsPage';
 
 export default function TeacherDashboard() {
   return (
@@ -17,13 +20,15 @@ export default function TeacherDashboard() {
       <Routes>
         <Route path="/" element={<Navigate to="dashboard" replace />} />
         <Route path="dashboard" element={<TeacherDashboardContent isDemo={false} />} />
-        <Route path="classes" element={<ComingSoonPage title="My Classes" />} />
+        <Route path="classes" element={<TeacherClassesPage />} />
         <Route path="attendance" element={<AttendancePage />} />
         <Route path="marks" element={<MarksEntryPage />} />
         <Route path="homework" element={<HomeworkPage />} />
         <Route path="sessions" element={<SessionPlanningPage />} />
         <Route path="schedule" element={<TeacherSchedulePage />} />
         <Route path="announcements" element={<TeacherAnnouncementsPage />} />
+        <Route path="leave" element={<TeacherLeavePage />} />
+        <Route path="leave-approvals" element={<TeacherLeaveApprovalsPage />} />
         <Route path="profile" element={<ProfilePage />} />
         <Route path="*" element={<Navigate to="dashboard" replace />} />
       </Routes>
