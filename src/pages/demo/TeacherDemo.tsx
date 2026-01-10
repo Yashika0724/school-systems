@@ -6,6 +6,13 @@ import { MobileNav } from '@/components/dashboard/MobileNav';
 import { useDemo } from '@/contexts/DemoContext';
 import { TeacherDashboardContent } from '@/components/teacher/TeacherDashboardContent';
 import { ComingSoonPage } from '@/components/shared/ComingSoonPage';
+import { TeacherClassesPage } from '@/components/teacher/TeacherClassesPage';
+import { AttendancePage } from '@/components/teacher/AttendancePage';
+import { MarksEntryPage } from '@/components/teacher/MarksEntryPage';
+import { HomeworkPage } from '@/components/teacher/HomeworkPage';
+import { TeacherAnnouncementsPage } from '@/components/teacher/TeacherAnnouncementsPage';
+import { TeacherLeavePage } from '@/components/teacher/TeacherLeavePage';
+import { TeacherSchedulePage } from '@/components/teacher/TeacherSchedulePage';
 
 export default function TeacherDemo() {
   const { setDemoMode } = useDemo();
@@ -20,12 +27,13 @@ export default function TeacherDemo() {
         <Routes>
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<TeacherDashboardContent isDemo />} />
-          <Route path="classes" element={<ComingSoonPage title="My Classes" />} />
-          <Route path="attendance" element={<ComingSoonPage title="Mark Attendance" />} />
-          <Route path="marks" element={<ComingSoonPage title="Marks Entry" />} />
-          <Route path="homework" element={<ComingSoonPage title="Homework & Assignments" />} />
-          <Route path="announcements" element={<ComingSoonPage title="Announcements" />} />
-          <Route path="leaves" element={<ComingSoonPage title="Leave Requests" />} />
+          <Route path="classes" element={<TeacherClassesPage />} />
+          <Route path="schedule" element={<TeacherSchedulePage />} />
+          <Route path="attendance" element={<AttendancePage />} />
+          <Route path="marks" element={<MarksEntryPage />} />
+          <Route path="homework" element={<HomeworkPage />} />
+          <Route path="announcements" element={<TeacherAnnouncementsPage />} />
+          <Route path="leaves" element={<TeacherLeavePage />} />
           <Route path="profile" element={<ComingSoonPage title="My Profile" />} />
         </Routes>
       </DashboardLayout>

@@ -8,6 +8,14 @@ import { AdminDashboardContent } from '@/components/admin/AdminDashboardContent'
 import { ComingSoonPage } from '@/components/shared/ComingSoonPage';
 import { FeeManagement } from '@/components/admin/FeeManagement';
 import { AnalyticsDashboard } from '@/components/admin/AnalyticsDashboard';
+import { AdminReports } from '@/components/admin/AdminReports';
+import { SystemSettings } from '@/components/admin/SystemSettings';
+import { ExamManagement } from '@/components/admin/ExamManagement';
+import { UserManagement } from '@/components/admin/UserManagement';
+import { ClassManagement } from '@/components/admin/ClassManagement';
+import { TimetableManagement } from '@/components/admin/TimetableManagement';
+import { AttendanceManagement } from '@/components/admin/AttendanceManagement';
+import { AnnouncementManagement } from '@/components/admin/AnnouncementManagement';
 
 export default function AdminDemo() {
   const { setDemoMode } = useDemo();
@@ -23,16 +31,17 @@ export default function AdminDemo() {
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<AdminDashboardContent isDemo />} />
           <Route path="analytics" element={<AnalyticsDashboard />} />
-          <Route path="students" element={<ComingSoonPage title="Student Management" />} />
-          <Route path="parents" element={<ComingSoonPage title="Parent Management" />} />
-          <Route path="teachers" element={<ComingSoonPage title="Teacher Management" />} />
-          <Route path="classes" element={<ComingSoonPage title="Class Management" />} />
-          <Route path="timetable" element={<ComingSoonPage title="Timetable Management" />} />
-          <Route path="attendance" element={<ComingSoonPage title="Attendance Management" />} />
-          <Route path="announcements" element={<ComingSoonPage title="Announcements" />} />
+          <Route path="students" element={<UserManagement defaultTab="students" />} />
+          <Route path="parents" element={<UserManagement defaultTab="parents" />} />
+          <Route path="teachers" element={<UserManagement defaultTab="teachers" />} />
+          <Route path="classes" element={<ClassManagement />} />
+          <Route path="timetable" element={<TimetableManagement />} />
+          <Route path="attendance" element={<AttendanceManagement />} />
+          <Route path="announcements" element={<AnnouncementManagement />} />
+          <Route path="exams" element={<ExamManagement />} />
           <Route path="fees" element={<FeeManagement />} />
-          <Route path="reports" element={<ComingSoonPage title="Reports" />} />
-          <Route path="settings" element={<ComingSoonPage title="System Settings" />} />
+          <Route path="reports" element={<AdminReports />} />
+          <Route path="settings" element={<SystemSettings />} />
         </Routes>
       </DashboardLayout>
       <MobileNav userType="admin" isDemo />
