@@ -3,7 +3,6 @@ import { DashboardLayout } from '@/components/dashboard/DashboardLayout';
 import { AdminSidebar } from '@/components/dashboard/AdminSidebar';
 import { AdminDashboardContent } from '@/components/admin/AdminDashboardContent';
 import { ProfilePage } from '@/components/profile/ProfilePage';
-import { ComingSoonPage } from '@/components/shared/ComingSoonPage';
 import { UserManagement } from '@/components/admin/UserManagement';
 import { ClassManagement } from '@/components/admin/ClassManagement';
 import { TimetableManagement } from '@/components/admin/TimetableManagement';
@@ -11,6 +10,9 @@ import { AnnouncementManagement } from '@/components/admin/AnnouncementManagemen
 import { AttendanceManagement } from '@/components/admin/AttendanceManagement';
 import { FeeManagement } from '@/components/admin/FeeManagement';
 import { AnalyticsDashboard } from '@/components/admin/AnalyticsDashboard';
+import { AdminReports } from '@/components/admin/AdminReports';
+import { SystemSettings } from '@/components/admin/SystemSettings';
+import { ExamManagement } from '@/components/admin/ExamManagement';
 
 export default function AdminDashboard() {
   return (
@@ -26,9 +28,10 @@ export default function AdminDashboard() {
         <Route path="attendance" element={<AttendanceManagement />} />
         <Route path="announcements" element={<AnnouncementManagement />} />
         <Route path="fees" element={<FeeManagement />} />
+        <Route path="exams" element={<ExamManagement />} />
         <Route path="analytics" element={<AnalyticsDashboard />} />
-        <Route path="reports" element={<ComingSoonPage title="Reports" />} />
-        <Route path="settings" element={<ComingSoonPage title="Settings" />} />
+        <Route path="reports" element={<AdminReports />} />
+        <Route path="settings" element={<SystemSettings />} />
         <Route path="profile" element={<ProfilePage />} />
         <Route path="*" element={<Navigate to="dashboard" replace />} />
       </Routes>

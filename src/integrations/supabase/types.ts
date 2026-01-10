@@ -274,6 +274,76 @@ export type Database = {
         }
         Relationships: []
       }
+      exams: {
+        Row: {
+          class_id: string
+          created_at: string
+          end_time: string
+          exam_date: string
+          exam_type_id: string
+          id: string
+          max_marks: number
+          notes: string | null
+          room: string | null
+          start_time: string
+          status: string
+          subject_id: string
+          updated_at: string
+        }
+        Insert: {
+          class_id: string
+          created_at?: string
+          end_time: string
+          exam_date: string
+          exam_type_id: string
+          id?: string
+          max_marks?: number
+          notes?: string | null
+          room?: string | null
+          start_time: string
+          status?: string
+          subject_id: string
+          updated_at?: string
+        }
+        Update: {
+          class_id?: string
+          created_at?: string
+          end_time?: string
+          exam_date?: string
+          exam_type_id?: string
+          id?: string
+          max_marks?: number
+          notes?: string | null
+          room?: string | null
+          start_time?: string
+          status?: string
+          subject_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "exams_class_id_fkey"
+            columns: ["class_id"]
+            isOneToOne: false
+            referencedRelation: "classes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exams_exam_type_id_fkey"
+            columns: ["exam_type_id"]
+            isOneToOne: false
+            referencedRelation: "exam_types"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "exams_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       fee_categories: {
         Row: {
           created_at: string
@@ -874,6 +944,36 @@ export type Database = {
           phone?: string | null
           updated_at?: string
           user_id?: string
+        }
+        Relationships: []
+      }
+      school_settings: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          setting_key: string
+          setting_value: Json
+          updated_at: string
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          setting_key: string
+          setting_value: Json
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          setting_key?: string
+          setting_value?: Json
+          updated_at?: string
         }
         Relationships: []
       }
