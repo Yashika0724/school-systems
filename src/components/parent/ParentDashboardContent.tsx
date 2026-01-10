@@ -20,8 +20,10 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
-import { demoParent, demoStudent } from '@/lib/demo-data';
+import { demoParent } from '@/lib/demo-data';
 import { ParentSidebar } from '@/components/dashboard/ParentSidebar';
+import { AnnouncementCarousel } from '@/components/shared/AnnouncementCarousel';
+import { useParentAnnouncements } from '@/hooks/useAnnouncements';
 
 interface ParentDashboardContentProps {
   isDemo?: boolean;
@@ -30,6 +32,7 @@ interface ParentDashboardContentProps {
 export function ParentDashboardContent({ isDemo = false }: ParentDashboardContentProps) {
   const parent = isDemo ? demoParent : demoParent;
   const [selectedChild, setSelectedChild] = useState(parent.children[0]);
+  const { data: announcements = [] } = useParentAnnouncements();
 
   return (
     <div className="p-4 md:p-6 pb-20 lg:pb-6 space-y-6">
@@ -102,6 +105,11 @@ export function ParentDashboardContent({ isDemo = false }: ParentDashboardConten
           </div>
         </CardContent>
       </Card>
+
+      {/* Announcements Carousel */}
+      {announcements.length > 0 && (
+        <AnnouncementCarousel announcements={announcements} />
+      )}
 
       {/* Quick Stats for Selected Child */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
