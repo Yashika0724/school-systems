@@ -9,6 +9,7 @@ import {
   MessageSquare,
   User,
   LogOut,
+  CalendarDays,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -19,10 +20,11 @@ import { demoParent } from '@/lib/demo-data';
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/parent/dashboard' },
   { icon: ClipboardCheck, label: 'Attendance', path: '/parent/attendance' },
-  { icon: FileText, label: 'Marks & Reports', path: '/parent/marks' },
+  { icon: FileText, label: 'Marks', path: '/parent/marks' },
   { icon: BookOpen, label: 'Homework', path: '/parent/homework' },
-  { icon: CreditCard, label: 'Fee Management', path: '/parent/fees' },
-  { icon: MessageSquare, label: 'Contact Teachers', path: '/parent/messages' },
+  { icon: CreditCard, label: 'Fees', path: '/parent/fees' },
+  { icon: CalendarDays, label: 'Leave Requests', path: '/parent/leaves' },
+  { icon: MessageSquare, label: 'Messages', path: '/parent/messages' },
   { icon: User, label: 'Profile', path: '/parent/profile' },
 ];
 

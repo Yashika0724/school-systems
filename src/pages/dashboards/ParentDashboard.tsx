@@ -8,6 +8,8 @@ import { ParentAttendancePage } from '@/components/parent/ParentAttendancePage';
 import { ParentMarksPage } from '@/components/parent/ParentMarksPage';
 import { ParentHomeworkPage } from '@/components/parent/ParentHomeworkPage';
 import { ParentFeePage } from '@/components/parent/ParentFeePage';
+import { ParentLeavePage } from '@/components/parent/ParentLeavePage';
+import { ParentMessagesPage } from '@/components/parent/ParentMessagesPage';
 
 export default function ParentDashboard() {
   return (
@@ -20,7 +22,8 @@ export default function ParentDashboard() {
         <Route path="marks" element={<ParentMarksPage />} />
         <Route path="homework" element={<ParentHomeworkPage />} />
         <Route path="fees" element={<ParentFeePage />} />
-        <Route path="messages" element={<ComingSoonPage title="Messages" />} />
+        <Route path="leaves" element={<ParentLeavePage />} />
+        <Route path="messages" element={<ParentMessagesPage />} />
         <Route path="profile" element={<ProfilePage />} />
         <Route path="*" element={<Navigate to="dashboard" replace />} />
       </Routes>
