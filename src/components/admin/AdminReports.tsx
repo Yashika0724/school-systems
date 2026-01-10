@@ -4,10 +4,12 @@ import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { FileText, Download, Users, GraduationCap, CreditCard, ClipboardCheck, TrendingUp, Loader2, Printer } from 'lucide-react';
+import { FileText, Download, CreditCard, ClipboardCheck, TrendingUp, Loader2 } from 'lucide-react';
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import { useState } from 'react';
+import { exportToCSV } from '@/lib/export-utils';
+import { toast } from 'sonner';
 
 export function AdminReports() {
   const [selectedClass, setSelectedClass] = useState<string>('all');
@@ -191,6 +193,58 @@ export function AdminReports() {
 
   const formatCurrency = (amount: number) => `₹${amount.toLocaleString('en-IN')}`;
 
+  const handleExportAttendance = () => {
+    if (!attendanceReport || attendanceReport.length === 0) {
+      toast.error('No attendance data to export');
+      return;
+    }
+    exportToCSV(attendanceReport, 'attendance_report', {
+      name: 'Student Name',
+      class: 'Class',
+      present: 'Days Present',
+      absent: 'Days Absent',
+      late: 'Days Late',
+      total: 'Total Days',
+      percentage: 'Attendance %',
+    });
+    toast.success('Attendance report exported successfully');
+  };
+
+  const handleExportFees = () => {
+    if (!feeReport?.byClass || feeReport.byClass.length === 0) {
+      toast.error('No fee data to export');
+      return;
+    }
+    const exportData = feeReport.byClass.map(cls => ({
+      name: cls.name,
+      collected: cls.collected,
+      pending: cls.pending,
+      percentage: cls.collected + cls.pending > 0 
+        ? Math.round((cls.collected / (cls.collected + cls.pending)) * 100) 
+        : 0,
+    }));
+    exportToCSV(exportData, 'fee_collection_report', {
+      name: 'Class',
+      collected: 'Collected (₹)',
+      pending: 'Pending (₹)',
+      percentage: 'Collection %',
+    });
+    toast.success('Fee collection report exported successfully');
+  };
+
+  const handleExportPerformance = () => {
+    if (!performanceReport || performanceReport.length === 0) {
+      toast.error('No performance data to export');
+      return;
+    }
+    exportToCSV(performanceReport, 'performance_report', {
+      subject: 'Subject',
+      examsTaken: 'Exams Taken',
+      average: 'Average Score (%)',
+    });
+    toast.success('Performance report exported successfully');
+  };
+
   return (
     <div className="p-4 md:p-6 space-y-6">
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -223,12 +277,18 @@ export function AdminReports() {
         {/* Attendance Report */}
         <TabsContent value="attendance" className="space-y-4 mt-4">
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <ClipboardCheck className="h-5 w-5 text-blue-500" />
-                Attendance Report
-              </CardTitle>
-              <CardDescription>Student attendance statistics</CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <ClipboardCheck className="h-5 w-5 text-blue-500" />
+                  Attendance Report
+                </CardTitle>
+                <CardDescription>Student attendance statistics</CardDescription>
+              </div>
+              <Button variant="outline" size="sm" onClick={handleExportAttendance}>
+                <Download className="h-4 w-4 mr-2" />
+                Export CSV
+              </Button>
             </CardHeader>
             <CardContent>
               {attendanceLoading ? (
@@ -299,11 +359,17 @@ export function AdminReports() {
           </div>
 
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <CreditCard className="h-5 w-5 text-green-500" />
-                Fee Collection by Class
-              </CardTitle>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <CreditCard className="h-5 w-5 text-green-500" />
+                  Fee Collection by Class
+                </CardTitle>
+              </div>
+              <Button variant="outline" size="sm" onClick={handleExportFees}>
+                <Download className="h-4 w-4 mr-2" />
+                Export CSV
+              </Button>
             </CardHeader>
             <CardContent>
               {feeLoading ? (
@@ -344,15 +410,20 @@ export function AdminReports() {
           </Card>
         </TabsContent>
 
-        {/* Performance Report */}
         <TabsContent value="performance" className="space-y-4 mt-4">
           <Card>
-            <CardHeader>
-              <CardTitle className="flex items-center gap-2">
-                <TrendingUp className="h-5 w-5 text-purple-500" />
-                Subject-wise Performance
-              </CardTitle>
-              <CardDescription>Average marks by subject</CardDescription>
+            <CardHeader className="flex flex-row items-center justify-between">
+              <div>
+                <CardTitle className="flex items-center gap-2">
+                  <TrendingUp className="h-5 w-5 text-purple-500" />
+                  Subject-wise Performance
+                </CardTitle>
+                <CardDescription>Average marks by subject</CardDescription>
+              </div>
+              <Button variant="outline" size="sm" onClick={handleExportPerformance}>
+                <Download className="h-4 w-4 mr-2" />
+                Export CSV
+              </Button>
             </CardHeader>
             <CardContent>
               {performanceLoading ? (
