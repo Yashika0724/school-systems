@@ -7,6 +7,11 @@ import { useDemo } from '@/contexts/DemoContext';
 import { ParentDashboardContent } from '@/components/parent/ParentDashboardContent';
 import { ComingSoonPage } from '@/components/shared/ComingSoonPage';
 import { ParentFeePage } from '@/components/parent/ParentFeePage';
+import { ParentAttendancePage } from '@/components/parent/ParentAttendancePage';
+import { ParentMarksPage } from '@/components/parent/ParentMarksPage';
+import { ParentHomeworkPage } from '@/components/parent/ParentHomeworkPage';
+import { ParentMessagesPage } from '@/components/parent/ParentMessagesPage';
+import { ParentLeavePage } from '@/components/parent/ParentLeavePage';
 
 export default function ParentDemo() {
   const { setDemoMode } = useDemo();
@@ -21,11 +26,12 @@ export default function ParentDemo() {
         <Routes>
           <Route index element={<Navigate to="dashboard" replace />} />
           <Route path="dashboard" element={<ParentDashboardContent isDemo />} />
-          <Route path="attendance" element={<ComingSoonPage title="Children's Attendance" />} />
-          <Route path="marks" element={<ComingSoonPage title="Marks & Reports" />} />
-          <Route path="homework" element={<ComingSoonPage title="Homework" />} />
+          <Route path="attendance" element={<ParentAttendancePage />} />
+          <Route path="marks" element={<ParentMarksPage />} />
+          <Route path="homework" element={<ParentHomeworkPage />} />
           <Route path="fees" element={<ParentFeePage />} />
-          <Route path="messages" element={<ComingSoonPage title="Contact Teachers" />} />
+          <Route path="messages" element={<ParentMessagesPage />} />
+          <Route path="leaves" element={<ParentLeavePage />} />
           <Route path="profile" element={<ComingSoonPage title="My Profile" />} />
         </Routes>
       </DashboardLayout>
