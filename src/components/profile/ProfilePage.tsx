@@ -1,8 +1,15 @@
+import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Textarea } from '@/components/ui/textarea';
 import { useUserProfile } from '@/hooks/useUserProfile';
+import { useUpdateProfile } from '@/hooks/useUpdateProfile';
 import { useAuth } from '@/contexts/AuthContext';
 import { useStudentData } from '@/hooks/useStudentData';
 import { useTeacherData } from '@/hooks/useTeacherData';
@@ -16,10 +23,13 @@ import {
   GraduationCap,
   Briefcase,
   Users,
-  BookOpen,
   Droplets,
   Hash,
-  BadgeCheck
+  BadgeCheck,
+  Pencil,
+  X,
+  Save,
+  Loader2
 } from 'lucide-react';
 import { format } from 'date-fns';
 
@@ -74,11 +84,49 @@ export function ProfilePage() {
   const { data: studentData, isLoading: studentLoading } = useStudentData();
   const { data: teacherData, isLoading: teacherLoading } = useTeacherData();
   const { data: parentData, isLoading: parentLoading } = useParentData();
+  const updateProfile = useUpdateProfile();
+  
+  const [isEditing, setIsEditing] = useState(false);
+  const [formData, setFormData] = useState({
+    full_name: '',
+    phone: '',
+    address: '',
+    date_of_birth: '',
+    gender: '',
+  });
 
   const isLoading = profileLoading || 
     (userRole === 'student' && studentLoading) ||
     (userRole === 'teacher' && teacherLoading) ||
     (userRole === 'parent' && parentLoading);
+
+  const handleStartEdit = () => {
+    if (profile) {
+      setFormData({
+        full_name: profile.full_name || '',
+        phone: profile.phone || '',
+        address: profile.address || '',
+        date_of_birth: profile.date_of_birth || '',
+        gender: profile.gender || '',
+      });
+    }
+    setIsEditing(true);
+  };
+
+  const handleCancelEdit = () => {
+    setIsEditing(false);
+  };
+
+  const handleSave = async () => {
+    await updateProfile.mutateAsync({
+      full_name: formData.full_name,
+      phone: formData.phone || null,
+      address: formData.address || null,
+      date_of_birth: formData.date_of_birth || null,
+      gender: formData.gender || null,
+    });
+    setIsEditing(false);
+  };
 
   if (isLoading) {
     return (
@@ -114,8 +162,29 @@ export function ProfilePage() {
   return (
     <div className="container max-w-2xl py-8">
       <Card>
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
           <CardTitle>My Profile</CardTitle>
+          {!isEditing ? (
+            <Button variant="outline" size="sm" onClick={handleStartEdit}>
+              <Pencil className="h-4 w-4 mr-2" />
+              Edit Profile
+            </Button>
+          ) : (
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" onClick={handleCancelEdit}>
+                <X className="h-4 w-4 mr-2" />
+                Cancel
+              </Button>
+              <Button size="sm" onClick={handleSave} disabled={updateProfile.isPending}>
+                {updateProfile.isPending ? (
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                ) : (
+                  <Save className="h-4 w-4 mr-2" />
+                )}
+                Save
+              </Button>
+            </div>
+          )}
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Header with avatar */}
@@ -134,39 +203,105 @@ export function ProfilePage() {
             </div>
           </div>
 
-          {/* Basic Info */}
-          <div className="space-y-1">
-            <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
-              Basic Information
-            </h3>
-            <div className="bg-muted/30 rounded-lg p-4">
-              <ProfileItem 
-                icon={<Mail className="h-5 w-5" />}
-                label="Email"
-                value={profile?.email}
-              />
-              <ProfileItem 
-                icon={<Phone className="h-5 w-5" />}
-                label="Phone"
-                value={profile?.phone}
-              />
-              <ProfileItem 
-                icon={<MapPin className="h-5 w-5" />}
-                label="Address"
-                value={profile?.address}
-              />
-              <ProfileItem 
-                icon={<Calendar className="h-5 w-5" />}
-                label="Date of Birth"
-                value={profile?.date_of_birth ? format(new Date(profile.date_of_birth), 'PPP') : null}
-              />
-              <ProfileItem 
-                icon={<User className="h-5 w-5" />}
-                label="Gender"
-                value={profile?.gender}
-              />
+          {/* Basic Info - View Mode */}
+          {!isEditing ? (
+            <div className="space-y-1">
+              <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+                Basic Information
+              </h3>
+              <div className="bg-muted/30 rounded-lg p-4">
+                <ProfileItem 
+                  icon={<Mail className="h-5 w-5" />}
+                  label="Email"
+                  value={profile?.email}
+                />
+                <ProfileItem 
+                  icon={<Phone className="h-5 w-5" />}
+                  label="Phone"
+                  value={profile?.phone}
+                />
+                <ProfileItem 
+                  icon={<MapPin className="h-5 w-5" />}
+                  label="Address"
+                  value={profile?.address}
+                />
+                <ProfileItem 
+                  icon={<Calendar className="h-5 w-5" />}
+                  label="Date of Birth"
+                  value={profile?.date_of_birth ? format(new Date(profile.date_of_birth), 'PPP') : null}
+                />
+                <ProfileItem 
+                  icon={<User className="h-5 w-5" />}
+                  label="Gender"
+                  value={profile?.gender}
+                />
+              </div>
             </div>
-          </div>
+          ) : (
+            /* Basic Info - Edit Mode */
+            <div className="space-y-4">
+              <h3 className="text-sm font-medium text-muted-foreground uppercase tracking-wide">
+                Edit Information
+              </h3>
+              <div className="grid gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="full_name">Full Name</Label>
+                  <Input
+                    id="full_name"
+                    value={formData.full_name}
+                    onChange={(e) => setFormData(prev => ({ ...prev, full_name: e.target.value }))}
+                    placeholder="Enter your full name"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="phone">Phone Number</Label>
+                  <Input
+                    id="phone"
+                    value={formData.phone}
+                    onChange={(e) => setFormData(prev => ({ ...prev, phone: e.target.value }))}
+                    placeholder="Enter your phone number"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="address">Address</Label>
+                  <Textarea
+                    id="address"
+                    value={formData.address}
+                    onChange={(e) => setFormData(prev => ({ ...prev, address: e.target.value }))}
+                    placeholder="Enter your address"
+                    rows={3}
+                  />
+                </div>
+                <div className="grid md:grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="date_of_birth">Date of Birth</Label>
+                    <Input
+                      id="date_of_birth"
+                      type="date"
+                      value={formData.date_of_birth}
+                      onChange={(e) => setFormData(prev => ({ ...prev, date_of_birth: e.target.value }))}
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="gender">Gender</Label>
+                    <Select 
+                      value={formData.gender} 
+                      onValueChange={(value) => setFormData(prev => ({ ...prev, gender: value }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Select gender" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Male">Male</SelectItem>
+                        <SelectItem value="Female">Female</SelectItem>
+                        <SelectItem value="Other">Other</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           {/* Role-specific Info */}
           {userRole === 'student' && studentData && (

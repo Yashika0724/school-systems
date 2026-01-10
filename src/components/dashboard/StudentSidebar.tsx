@@ -24,6 +24,7 @@ const navItems = [
   { icon: FileText, label: 'Marks & Reports', path: '/student/marks' },
   { icon: Calendar, label: 'Timetable', path: '/student/timetable' },
   { icon: BookOpen, label: 'Homework', path: '/student/homework' },
+  { icon: GraduationCap, label: 'Exams', path: '/student/exams' },
   { icon: CreditCard, label: 'Fee Details', path: '/student/fees' },
   { icon: Megaphone, label: 'Announcements', path: '/student/announcements' },
   { icon: CalendarDays, label: 'Leave Requests', path: '/student/leave' },
