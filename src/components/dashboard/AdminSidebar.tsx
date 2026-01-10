@@ -15,6 +15,8 @@ import {
   LogOut,
   FileText,
   ClipboardList,
+  Library,
+  Bus,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -35,6 +37,8 @@ const navItems = [
   { icon: ClipboardList, label: 'Exams', path: '/admin/exams' },
   { icon: Megaphone, label: 'Announcements', path: '/admin/announcements' },
   { icon: CreditCard, label: 'Fee Management', path: '/admin/fees' },
+  { icon: Library, label: 'Library', path: '/admin/library' },
+  { icon: Bus, label: 'Transport', path: '/admin/transport' },
   { icon: Settings, label: 'Settings', path: '/admin/settings' },
 ];
 
@@ -81,7 +85,7 @@ export function AdminSidebar({ isDemo = false }: AdminSidebarProps) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-1">
+      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
         {items.map((item) => {
           const isActive = location.pathname === item.path || 
             (item.path === `${basePath}/dashboard` && location.pathname === basePath);

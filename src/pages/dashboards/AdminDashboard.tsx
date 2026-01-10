@@ -13,6 +13,8 @@ import { AnalyticsDashboard } from '@/components/admin/AnalyticsDashboard';
 import { AdminReports } from '@/components/admin/AdminReports';
 import { SystemSettings } from '@/components/admin/SystemSettings';
 import { ExamManagement } from '@/components/admin/ExamManagement';
+import { LibraryManagement } from '@/components/admin/LibraryManagement';
+import { TransportManagement } from '@/components/admin/TransportManagement';
 
 export default function AdminDashboard() {
   return (
@@ -29,6 +31,8 @@ export default function AdminDashboard() {
         <Route path="announcements" element={<AnnouncementManagement />} />
         <Route path="fees" element={<FeeManagement />} />
         <Route path="exams" element={<ExamManagement />} />
+        <Route path="library" element={<LibraryManagement />} />
+        <Route path="transport" element={<TransportManagement />} />
         <Route path="analytics" element={<AnalyticsDashboard />} />
         <Route path="reports" element={<AdminReports />} />
         <Route path="settings" element={<SystemSettings />} />

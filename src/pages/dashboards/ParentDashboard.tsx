@@ -10,6 +10,8 @@ import { ParentHomeworkPage } from '@/components/parent/ParentHomeworkPage';
 import { ParentFeePage } from '@/components/parent/ParentFeePage';
 import { ParentLeavePage } from '@/components/parent/ParentLeavePage';
 import { ParentMessagesPage } from '@/components/parent/ParentMessagesPage';
+import { ParentLibraryPage } from '@/components/parent/ParentLibraryPage';
+import { ParentTransportPage } from '@/components/parent/ParentTransportPage';
 
 export default function ParentDashboard() {
   return (
@@ -22,6 +24,8 @@ export default function ParentDashboard() {
         <Route path="marks" element={<ParentMarksPage />} />
         <Route path="homework" element={<ParentHomeworkPage />} />
         <Route path="fees" element={<ParentFeePage />} />
+        <Route path="library" element={<ParentLibraryPage />} />
+        <Route path="transport" element={<ParentTransportPage />} />
         <Route path="leaves" element={<ParentLeavePage />} />
         <Route path="messages" element={<ParentMessagesPage />} />
         <Route path="profile" element={<ProfilePage />} />

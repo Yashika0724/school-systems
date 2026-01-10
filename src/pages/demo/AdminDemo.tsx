@@ -5,7 +5,6 @@ import { AdminSidebar } from '@/components/dashboard/AdminSidebar';
 import { MobileNav } from '@/components/dashboard/MobileNav';
 import { useDemo } from '@/contexts/DemoContext';
 import { AdminDashboardContent } from '@/components/admin/AdminDashboardContent';
-import { ComingSoonPage } from '@/components/shared/ComingSoonPage';
 import { FeeManagement } from '@/components/admin/FeeManagement';
 import { AnalyticsDashboard } from '@/components/admin/AnalyticsDashboard';
 import { AdminReports } from '@/components/admin/AdminReports';
@@ -16,6 +15,8 @@ import { ClassManagement } from '@/components/admin/ClassManagement';
 import { TimetableManagement } from '@/components/admin/TimetableManagement';
 import { AttendanceManagement } from '@/components/admin/AttendanceManagement';
 import { AnnouncementManagement } from '@/components/admin/AnnouncementManagement';
+import { LibraryManagement } from '@/components/admin/LibraryManagement';
+import { TransportManagement } from '@/components/admin/TransportManagement';
 
 export default function AdminDemo() {
   const { setDemoMode } = useDemo();
@@ -40,6 +41,8 @@ export default function AdminDemo() {
           <Route path="announcements" element={<AnnouncementManagement />} />
           <Route path="exams" element={<ExamManagement />} />
           <Route path="fees" element={<FeeManagement />} />
+          <Route path="library" element={<LibraryManagement />} />
+          <Route path="transport" element={<TransportManagement />} />
           <Route path="reports" element={<AdminReports />} />
           <Route path="settings" element={<SystemSettings />} />
         </Routes>

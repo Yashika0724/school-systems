@@ -10,6 +10,8 @@ import {
   User,
   LogOut,
   CalendarDays,
+  Library,
+  Bus,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -23,6 +25,8 @@ const navItems = [
   { icon: FileText, label: 'Marks', path: '/parent/marks' },
   { icon: BookOpen, label: 'Homework', path: '/parent/homework' },
   { icon: CreditCard, label: 'Fees', path: '/parent/fees' },
+  { icon: Library, label: 'Library', path: '/parent/library' },
+  { icon: Bus, label: 'Transport', path: '/parent/transport' },
   { icon: CalendarDays, label: 'Leave Requests', path: '/parent/leaves' },
   { icon: MessageSquare, label: 'Messages', path: '/parent/messages' },
   { icon: User, label: 'Profile', path: '/parent/profile' },
@@ -71,7 +75,7 @@ export function ParentSidebar({ isDemo = false }: ParentSidebarProps) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-1">
+      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
         {items.map((item) => {
           const isActive = location.pathname === item.path || 
             (item.path === `${basePath}/dashboard` && location.pathname === basePath);
