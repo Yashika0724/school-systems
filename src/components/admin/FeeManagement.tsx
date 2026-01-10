@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import {
   CreditCard,
   Plus,
@@ -49,6 +50,7 @@ import {
   useRecordPayment,
 } from '@/hooks/useFeeManagement';
 import { Skeleton } from '@/components/ui/skeleton';
+import { supabase } from '@/integrations/supabase/client';
 
 export function FeeManagement() {
   const [statusFilter, setStatusFilter] = useState<string>('');
@@ -74,6 +76,19 @@ export function FeeManagement() {
     statusFilter ? { status: statusFilter } : undefined
   );
   const { data: stats, isLoading: statsLoading } = useFeeStats();
+
+  // Fetch classes for the fee structure form
+  const { data: classes } = useQuery({
+    queryKey: ['classes'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('classes')
+        .select('id, name, section')
+        .order('name');
+      if (error) throw error;
+      return data;
+    },
+  });
 
   const createStructure = useCreateFeeStructure();
   const recordPayment = useRecordPayment();
@@ -149,6 +164,22 @@ export function FeeManagement() {
                 <DialogTitle>Create Fee Structure</DialogTitle>
               </DialogHeader>
               <div className="space-y-4 pt-4">
+                <div className="space-y-2">
+                  <Label>Class</Label>
+                  <Select
+                    value={newStructure.class_id}
+                    onValueChange={(v) => setNewStructure(prev => ({ ...prev, class_id: v }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select class" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {classes?.map(cls => (
+                        <SelectItem key={cls.id} value={cls.id}>{cls.name} - {cls.section}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
                 <div className="space-y-2">
                   <Label>Fee Category</Label>
                   <Select
