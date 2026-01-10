@@ -70,18 +70,27 @@ export function TimetableManagement() {
   const { data: teachers } = useQuery({
     queryKey: ['teachers-with-profiles'],
     queryFn: async () => {
-      const { data, error } = await supabase
+      // First get all teachers
+      const { data: teacherData, error: teacherError } = await supabase
         .from('teachers')
-        .select(`
-          id,
-          user_id,
-          profile:profiles!teachers_user_id_fkey(full_name)
-        `)
+        .select('id, user_id')
         .order('id');
-      if (error) throw error;
-      return data?.map(t => ({
+      if (teacherError) throw teacherError;
+      
+      if (!teacherData || teacherData.length === 0) return [];
+      
+      // Then get profiles for those teachers
+      const userIds = teacherData.map(t => t.user_id);
+      const { data: profileData, error: profileError } = await supabase
+        .from('profiles')
+        .select('user_id, full_name')
+        .in('user_id', userIds);
+      if (profileError) throw profileError;
+      
+      // Merge the data
+      return teacherData.map(t => ({
         ...t,
-        profile: Array.isArray(t.profile) ? t.profile[0] : t.profile,
+        profile: profileData?.find(p => p.user_id === t.user_id) || null,
       }));
     },
   });
