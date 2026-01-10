@@ -7,6 +7,7 @@ import { ComingSoonPage } from '@/components/shared/ComingSoonPage';
 import { ParentAttendancePage } from '@/components/parent/ParentAttendancePage';
 import { ParentMarksPage } from '@/components/parent/ParentMarksPage';
 import { ParentHomeworkPage } from '@/components/parent/ParentHomeworkPage';
+import { ParentFeePage } from '@/components/parent/ParentFeePage';
 
 export default function ParentDashboard() {
   return (
@@ -18,7 +19,7 @@ export default function ParentDashboard() {
         <Route path="attendance" element={<ParentAttendancePage />} />
         <Route path="marks" element={<ParentMarksPage />} />
         <Route path="homework" element={<ParentHomeworkPage />} />
-        <Route path="fees" element={<ComingSoonPage title="Fee Payments" />} />
+        <Route path="fees" element={<ParentFeePage />} />
         <Route path="messages" element={<ComingSoonPage title="Messages" />} />
         <Route path="profile" element={<ProfilePage />} />
         <Route path="*" element={<Navigate to="dashboard" replace />} />

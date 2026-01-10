@@ -22,6 +22,7 @@ import { demoAdmin } from '@/lib/demo-data';
 
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/admin/dashboard' },
+  { icon: BarChart3, label: 'Analytics', path: '/admin/analytics' },
   { icon: GraduationCap, label: 'Students', path: '/admin/students' },
   { icon: Users, label: 'Parents', path: '/admin/parents' },
   { icon: BookOpen, label: 'Teachers', path: '/admin/teachers' },
@@ -29,7 +30,7 @@ const navItems = [
   { icon: Calendar, label: 'Timetable', path: '/admin/timetable' },
   { icon: ClipboardCheck, label: 'Attendance', path: '/admin/attendance' },
   { icon: Megaphone, label: 'Announcements', path: '/admin/announcements' },
-  { icon: CreditCard, label: 'Fee Configuration', path: '/admin/fees' },
+  { icon: CreditCard, label: 'Fee Management', path: '/admin/fees' },
 ];
 
 const demoNavItems = navItems.map(item => ({

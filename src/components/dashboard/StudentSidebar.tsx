@@ -6,7 +6,7 @@ import {
   FileText,
   Calendar,
   BookOpen,
-  FolderOpen,
+  CreditCard,
   Megaphone,
   User,
   LogOut,
@@ -23,8 +23,8 @@ const navItems = [
   { icon: FileText, label: 'Marks & Reports', path: '/student/marks' },
   { icon: Calendar, label: 'Timetable', path: '/student/timetable' },
   { icon: BookOpen, label: 'Homework', path: '/student/homework' },
+  { icon: CreditCard, label: 'Fee Details', path: '/student/fees' },
   { icon: Megaphone, label: 'Announcements', path: '/student/announcements' },
-  { icon: FolderOpen, label: 'Resources', path: '/student/resources' },
   { icon: User, label: 'Profile', path: '/student/profile' },
 ];
 

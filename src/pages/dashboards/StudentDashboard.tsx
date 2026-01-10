@@ -8,6 +8,7 @@ import { StudentAttendancePage } from '@/components/student/StudentAttendancePag
 import { StudentMarksPage } from '@/components/student/StudentMarksPage';
 import { StudentHomeworkPage } from '@/components/student/StudentHomeworkPage';
 import { StudentTimetablePage } from '@/components/student/StudentTimetablePage';
+import { StudentFeePage } from '@/components/student/StudentFeePage';
 
 export default function StudentDashboard() {
   return (
@@ -20,7 +21,9 @@ export default function StudentDashboard() {
         <Route path="timetable" element={<StudentTimetablePage />} />
         <Route path="homework" element={<StudentHomeworkPage />} />
         <Route path="exams" element={<ComingSoonPage title="Examinations" />} />
-        <Route path="fees" element={<ComingSoonPage title="Fee Details" />} />
+        <Route path="fees" element={<StudentFeePage />} />
+        <Route path="announcements" element={<ComingSoonPage title="Announcements" />} />
+        <Route path="resources" element={<ComingSoonPage title="Resources" />} />
         <Route path="profile" element={<ProfilePage />} />
         <Route path="*" element={<Navigate to="dashboard" replace />} />
       </Routes>
