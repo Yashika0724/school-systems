@@ -5,6 +5,7 @@ import {
   Calendar,
   TrendingUp,
   Menu,
+  Loader2,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -15,14 +16,58 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { StudentSidebar } from '@/components/dashboard/StudentSidebar';
 import { AnnouncementCarousel } from '@/components/shared/AnnouncementCarousel';
 import { useStudentAnnouncements } from '@/hooks/useAnnouncements';
+import { useStudentDashboardData } from '@/hooks/useStudentDashboard';
 
 interface StudentDashboardContentProps {
   isDemo?: boolean;
 }
 
 export function StudentDashboardContent({ isDemo = false }: StudentDashboardContentProps) {
-  const student = isDemo ? demoStudent : demoStudent; // In real app, fetch from auth context
+  // Use real data for logged-in users, demo data for demo mode
+  const { 
+    student: realStudent, 
+    attendance: realAttendance, 
+    recentMarks: realMarks,
+    homework: realHomework,
+    pendingHomeworkCount,
+    todaySchedule: realSchedule,
+    isLoading 
+  } = useStudentDashboardData();
+  
   const { data: announcements = [] } = useStudentAnnouncements();
+
+  // Use demo data in demo mode, otherwise use real data
+  const student = isDemo ? {
+    name: demoStudent.name,
+    class: demoStudent.class,
+    rollNumber: demoStudent.rollNumber,
+    avatar: demoStudent.avatar,
+  } : {
+    name: realStudent?.name || 'Student',
+    class: realStudent?.class || '',
+    rollNumber: realStudent?.rollNumber || '',
+    avatar: realStudent?.avatar,
+  };
+
+  const attendance = isDemo ? demoStudent.attendance : realAttendance;
+  const recentMarks = isDemo ? demoStudent.recentMarks : realMarks;
+  const homework = isDemo ? demoStudent.homework : realHomework;
+  const todaySchedule = isDemo ? demoStudent.timetable[0]?.periods || [] : realSchedule;
+  const upcomingExams = isDemo ? demoStudent.upcomingExams : 0;
+  const pendingHW = isDemo ? demoStudent.pendingHomework : pendingHomeworkCount;
+
+  // Calculate average grade
+  const avgGrade = recentMarks.length > 0 
+    ? recentMarks[0]?.grade || 'N/A'
+    : 'N/A';
+
+  if (!isDemo && isLoading) {
+    return (
+      <div className="flex items-center justify-center h-full min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 md:p-6 pb-20 lg:pb-6 space-y-6">
@@ -42,12 +87,15 @@ export function StudentDashboardContent({ isDemo = false }: StudentDashboardCont
           
           <div>
             <h1 className="text-2xl font-bold">Welcome back, {student.name.split(' ')[0]}! 👋</h1>
-            <p className="text-muted-foreground">Class {student.class} • Roll No. {student.rollNumber}</p>
+            <p className="text-muted-foreground">
+              {student.class && `Class ${student.class}`}
+              {student.rollNumber && ` • Roll No. ${student.rollNumber}`}
+            </p>
           </div>
         </div>
         
         <Avatar className="h-12 w-12 border-2 border-primary">
-          <AvatarImage src={student.avatar} />
+          <AvatarImage src={student.avatar || undefined} />
           <AvatarFallback>{student.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
         </Avatar>
       </div>
@@ -64,7 +112,7 @@ export function StudentDashboardContent({ isDemo = false }: StudentDashboardCont
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-green-700">Attendance</p>
-                <p className="text-2xl font-bold text-green-800">{student.attendance.percentage}%</p>
+                <p className="text-2xl font-bold text-green-800">{attendance.percentage}%</p>
               </div>
               <ClipboardCheck className="h-8 w-8 text-green-600" />
             </div>
@@ -76,7 +124,7 @@ export function StudentDashboardContent({ isDemo = false }: StudentDashboardCont
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-blue-700">Avg. Grade</p>
-                <p className="text-2xl font-bold text-blue-800">A</p>
+                <p className="text-2xl font-bold text-blue-800">{avgGrade}</p>
               </div>
               <TrendingUp className="h-8 w-8 text-blue-600" />
             </div>
@@ -88,7 +136,7 @@ export function StudentDashboardContent({ isDemo = false }: StudentDashboardCont
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-purple-700">Upcoming Exams</p>
-                <p className="text-2xl font-bold text-purple-800">{student.upcomingExams}</p>
+                <p className="text-2xl font-bold text-purple-800">{upcomingExams}</p>
               </div>
               <Calendar className="h-8 w-8 text-purple-600" />
             </div>
@@ -100,7 +148,7 @@ export function StudentDashboardContent({ isDemo = false }: StudentDashboardCont
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-orange-700">Pending HW</p>
-                <p className="text-2xl font-bold text-orange-800">{student.pendingHomework}</p>
+                <p className="text-2xl font-bold text-orange-800">{pendingHW}</p>
               </div>
               <BookOpen className="h-8 w-8 text-orange-600" />
             </div>
@@ -118,15 +166,19 @@ export function StudentDashboardContent({ isDemo = false }: StudentDashboardCont
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {student.recentMarks.map((mark, index) => (
-              <div key={index} className="space-y-2">
-                <div className="flex justify-between text-sm">
-                  <span>{mark.subject}</span>
-                  <span className="font-medium">{mark.marks}/{mark.total} ({mark.grade})</span>
+            {recentMarks.length > 0 ? (
+              recentMarks.map((mark, index) => (
+                <div key={index} className="space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span>{mark.subject}</span>
+                    <span className="font-medium">{mark.marks}/{mark.total} ({mark.grade})</span>
+                  </div>
+                  <Progress value={(mark.marks / mark.total) * 100} className="h-2" />
                 </div>
-                <Progress value={(mark.marks / mark.total) * 100} className="h-2" />
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="text-center text-muted-foreground py-4">No marks recorded yet</p>
+            )}
           </CardContent>
         </Card>
 
@@ -139,19 +191,22 @@ export function StudentDashboardContent({ isDemo = false }: StudentDashboardCont
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {student.homework.filter(hw => hw.status === 'pending').map((hw) => (
-              <div key={hw.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
-                <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
-                  <BookOpen className="h-5 w-5 text-primary" />
+            {homework.filter(hw => hw.status === 'pending').length > 0 ? (
+              homework.filter(hw => hw.status === 'pending').map((hw) => (
+                <div key={hw.id} className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                  <div className="h-10 w-10 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                    <BookOpen className="h-5 w-5 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-sm truncate">{hw.title}</p>
+                    <p className="text-xs text-muted-foreground">{hw.subject}</p>
+                    <p className="text-xs text-orange-600 mt-1">
+                      Due: {new Date(hw.dueDate).toLocaleDateString('en-IN')}
+                    </p>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm truncate">{hw.title}</p>
-                  <p className="text-xs text-muted-foreground">{hw.subject}</p>
-                  <p className="text-xs text-orange-600 mt-1">Due: {new Date(hw.dueDate).toLocaleDateString('en-IN')}</p>
-                </div>
-              </div>
-            ))}
-            {student.homework.filter(hw => hw.status === 'pending').length === 0 && (
+              ))
+            ) : (
               <p className="text-center text-muted-foreground py-4">No pending homework! 🎉</p>
             )}
           </CardContent>
@@ -167,17 +222,40 @@ export function StudentDashboardContent({ isDemo = false }: StudentDashboardCont
           </CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="flex gap-2 overflow-x-auto pb-2">
-            {student.timetable[0].periods.map((period, index) => (
-              <div
-                key={index}
-                className="flex-shrink-0 w-24 p-3 rounded-lg bg-primary/5 border text-center"
-              >
-                <p className="text-xs text-muted-foreground">Period {index + 1}</p>
-                <p className="font-medium text-sm mt-1">{period}</p>
-              </div>
-            ))}
-          </div>
+          {isDemo ? (
+            <div className="flex gap-2 overflow-x-auto pb-2">
+              {todaySchedule.map((period, index) => (
+                <div
+                  key={index}
+                  className="flex-shrink-0 w-24 p-3 rounded-lg bg-primary/5 border text-center"
+                >
+                  <p className="text-xs text-muted-foreground">Period {index + 1}</p>
+                  <p className="font-medium text-sm mt-1">{period}</p>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div className="flex gap-2 overflow-x-auto pb-2">
+              {realSchedule.length > 0 ? (
+                realSchedule.map((slot, index) => (
+                  <div
+                    key={index}
+                    className="flex-shrink-0 w-28 p-3 rounded-lg bg-primary/5 border text-center"
+                  >
+                    <p className="text-xs text-muted-foreground">Period {slot.period}</p>
+                    <p className="font-medium text-sm mt-1">{slot.subject || 'Free'}</p>
+                    <p className="text-xs text-muted-foreground mt-1">
+                      {slot.startTime?.slice(0, 5)}
+                    </p>
+                  </div>
+                ))
+              ) : (
+                <p className="text-center text-muted-foreground py-4 w-full">
+                  No schedule for today
+                </p>
+              )}
+            </div>
+          )}
         </CardContent>
       </Card>
     </div>

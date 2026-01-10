@@ -10,6 +10,7 @@ import {
   Menu,
   Plus,
   ArrowUpRight,
+  Loader2,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -20,20 +21,75 @@ import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
 import { demoAdmin } from '@/lib/demo-data';
 import { AdminSidebar } from '@/components/dashboard/AdminSidebar';
 import { useDemo } from '@/contexts/DemoContext';
+import { useAdminDashboardData } from '@/hooks/useAdminDashboard';
+import { Link } from 'react-router-dom';
 
 interface AdminDashboardContentProps {
   isDemo?: boolean;
 }
 
 export function AdminDashboardContent({ isDemo = false }: AdminDashboardContentProps) {
-  const admin = isDemo ? demoAdmin : demoAdmin;
   const { showDemoToast } = useDemo();
+  const {
+    admin: realAdmin,
+    stats: realStats,
+    recentActivities: realActivities,
+    upcomingEvents: realEvents,
+    isLoading,
+  } = useAdminDashboardData();
+
+  // Use demo data in demo mode
+  const admin = isDemo ? demoAdmin : {
+    name: realAdmin?.name || 'Admin',
+    avatar: realAdmin?.avatar,
+  };
+
+  const stats = isDemo ? {
+    totalStudents: demoAdmin.schoolStats.totalStudents,
+    totalTeachers: demoAdmin.schoolStats.totalTeachers,
+    totalParents: demoAdmin.schoolStats.totalParents,
+    totalClasses: demoAdmin.schoolStats.totalClasses,
+    attendanceToday: demoAdmin.schoolStats.attendanceToday,
+    feeCollectionRate: demoAdmin.schoolStats.feeCollected,
+    totalFeeCollected: 4500000,
+    totalFeePending: 800000,
+    totalFeeExpected: 5300000,
+    overdueInvoices: 15,
+  } : realStats;
+
+  const recentActivities = isDemo ? demoAdmin.recentActivities : realActivities;
+  const upcomingEvents = isDemo ? demoAdmin.upcomingEvents : realEvents;
+
+  // Demo pending approvals
+  const pendingApprovals = isDemo ? demoAdmin.pendingApprovals : {
+    teacherLeaves: 0,
+    studentAdmissions: 0,
+    feeWaivers: 0,
+  };
 
   const handleAction = (action: string) => {
     if (isDemo) {
       showDemoToast(action);
     }
   };
+
+  const formatCurrency = (amount: number): string => {
+    if (amount >= 100000) {
+      return `₹${(amount / 100000).toFixed(1)}L`;
+    }
+    if (amount >= 1000) {
+      return `₹${(amount / 1000).toFixed(0)}K`;
+    }
+    return `₹${amount}`;
+  };
+
+  if (!isDemo && isLoading) {
+    return (
+      <div className="flex items-center justify-center h-full min-h-[400px]">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+      </div>
+    );
+  }
 
   return (
     <div className="p-4 md:p-6 pb-20 md:pb-6 space-y-6">
@@ -58,12 +114,24 @@ export function AdminDashboardContent({ isDemo = false }: AdminDashboardContentP
         </div>
 
         <div className="flex items-center gap-3">
-          <Button onClick={() => handleAction('Add New User clicked')}>
-            <Plus className="h-4 w-4 mr-2" />
-            Add User
+          <Button 
+            onClick={() => handleAction('Add New User clicked')}
+            asChild={!isDemo}
+          >
+            {isDemo ? (
+              <>
+                <Plus className="h-4 w-4 mr-2" />
+                Add User
+              </>
+            ) : (
+              <Link to="/admin/users" className="flex items-center">
+                <Plus className="h-4 w-4 mr-2" />
+                Add User
+              </Link>
+            )}
           </Button>
           <Avatar className="h-10 w-10 border-2 border-primary">
-            <AvatarImage src={admin.avatar} />
+            <AvatarImage src={admin.avatar || undefined} />
             <AvatarFallback>{admin.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
           </Avatar>
         </div>
@@ -77,7 +145,7 @@ export function AdminDashboardContent({ isDemo = false }: AdminDashboardContentP
               <GraduationCap className="h-8 w-8 text-orange-500" />
               <ArrowUpRight className="h-4 w-4 text-green-500" />
             </div>
-            <p className="text-2xl font-bold mt-2">{admin.schoolStats.totalStudents}</p>
+            <p className="text-2xl font-bold mt-2">{stats.totalStudents}</p>
             <p className="text-sm text-muted-foreground">Students</p>
           </CardContent>
         </Card>
@@ -88,7 +156,7 @@ export function AdminDashboardContent({ isDemo = false }: AdminDashboardContentP
               <BookOpen className="h-8 w-8 text-purple-500" />
               <ArrowUpRight className="h-4 w-4 text-green-500" />
             </div>
-            <p className="text-2xl font-bold mt-2">{admin.schoolStats.totalTeachers}</p>
+            <p className="text-2xl font-bold mt-2">{stats.totalTeachers}</p>
             <p className="text-sm text-muted-foreground">Teachers</p>
           </CardContent>
         </Card>
@@ -99,7 +167,7 @@ export function AdminDashboardContent({ isDemo = false }: AdminDashboardContentP
               <Users className="h-8 w-8 text-green-500" />
               <ArrowUpRight className="h-4 w-4 text-green-500" />
             </div>
-            <p className="text-2xl font-bold mt-2">{admin.schoolStats.totalParents}</p>
+            <p className="text-2xl font-bold mt-2">{stats.totalParents}</p>
             <p className="text-sm text-muted-foreground">Parents</p>
           </CardContent>
         </Card>
@@ -109,7 +177,7 @@ export function AdminDashboardContent({ isDemo = false }: AdminDashboardContentP
             <div className="flex items-center justify-between">
               <School className="h-8 w-8 text-blue-500" />
             </div>
-            <p className="text-2xl font-bold mt-2">{admin.schoolStats.totalClasses}</p>
+            <p className="text-2xl font-bold mt-2">{stats.totalClasses}</p>
             <p className="text-sm text-muted-foreground">Classes</p>
           </CardContent>
         </Card>
@@ -119,7 +187,7 @@ export function AdminDashboardContent({ isDemo = false }: AdminDashboardContentP
             <div className="flex items-center justify-between">
               <TrendingUp className="h-8 w-8 text-emerald-500" />
             </div>
-            <p className="text-2xl font-bold mt-2">{admin.schoolStats.attendanceToday}%</p>
+            <p className="text-2xl font-bold mt-2">{stats.attendanceToday}%</p>
             <p className="text-sm text-muted-foreground">Attendance</p>
           </CardContent>
         </Card>
@@ -129,7 +197,7 @@ export function AdminDashboardContent({ isDemo = false }: AdminDashboardContentP
             <div className="flex items-center justify-between">
               <CreditCard className="h-8 w-8 text-amber-500" />
             </div>
-            <p className="text-2xl font-bold mt-2">{admin.schoolStats.feeCollected}%</p>
+            <p className="text-2xl font-bold mt-2">{stats.feeCollectionRate}%</p>
             <p className="text-sm text-muted-foreground">Fee Collected</p>
           </CardContent>
         </Card>
@@ -150,21 +218,21 @@ export function AdminDashboardContent({ isDemo = false }: AdminDashboardContentP
                 <p className="font-medium">Teacher Leaves</p>
                 <p className="text-sm text-muted-foreground">Awaiting approval</p>
               </div>
-              <Badge variant="destructive">{admin.pendingApprovals.teacherLeaves}</Badge>
+              <Badge variant="destructive">{pendingApprovals.teacherLeaves}</Badge>
             </div>
             <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50 border border-blue-200">
               <div>
                 <p className="font-medium">Student Admissions</p>
                 <p className="text-sm text-muted-foreground">New applications</p>
               </div>
-              <Badge>{admin.pendingApprovals.studentAdmissions}</Badge>
+              <Badge>{pendingApprovals.studentAdmissions}</Badge>
             </div>
             <div className="flex items-center justify-between p-3 rounded-lg bg-purple-50 border border-purple-200">
               <div>
                 <p className="font-medium">Fee Waivers</p>
                 <p className="text-sm text-muted-foreground">Discount requests</p>
               </div>
-              <Badge variant="secondary">{admin.pendingApprovals.feeWaivers}</Badge>
+              <Badge variant="secondary">{pendingApprovals.feeWaivers}</Badge>
             </div>
           </CardContent>
         </Card>
@@ -178,19 +246,23 @@ export function AdminDashboardContent({ isDemo = false }: AdminDashboardContentP
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {admin.recentActivities.map((activity, index) => (
-              <div key={index} className="flex items-start gap-3">
-                <div className={`h-2 w-2 rounded-full mt-2 ${
-                  activity.type === 'enrollment' ? 'bg-green-500' :
-                  activity.type === 'fee' ? 'bg-blue-500' :
-                  activity.type === 'leave' ? 'bg-orange-500' : 'bg-purple-500'
-                }`} />
-                <div>
-                  <p className="text-sm">{activity.message}</p>
-                  <p className="text-xs text-muted-foreground">{activity.time}</p>
+            {recentActivities.length > 0 ? (
+              recentActivities.map((activity, index) => (
+                <div key={index} className="flex items-start gap-3">
+                  <div className={`h-2 w-2 rounded-full mt-2 ${
+                    activity.type === 'enrollment' ? 'bg-green-500' :
+                    activity.type === 'fee' ? 'bg-blue-500' :
+                    activity.type === 'leave' ? 'bg-orange-500' : 'bg-purple-500'
+                  }`} />
+                  <div>
+                    <p className="text-sm">{activity.message}</p>
+                    <p className="text-xs text-muted-foreground">{activity.time}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="text-center text-muted-foreground py-4">No recent activity</p>
+            )}
           </CardContent>
         </Card>
 
@@ -203,23 +275,27 @@ export function AdminDashboardContent({ isDemo = false }: AdminDashboardContentP
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            {admin.upcomingEvents.map((event, index) => (
-              <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
-                <div>
-                  <p className="font-medium">{event.name}</p>
-                  <p className="text-sm text-muted-foreground">
-                    {new Date(event.date).toLocaleDateString('en-IN', {
-                      day: 'numeric',
-                      month: 'short',
-                      year: 'numeric',
-                    })}
-                  </p>
+            {upcomingEvents.length > 0 ? (
+              upcomingEvents.map((event, index) => (
+                <div key={index} className="flex items-center justify-between p-3 rounded-lg bg-muted/50">
+                  <div>
+                    <p className="font-medium">{event.name}</p>
+                    <p className="text-sm text-muted-foreground">
+                      {new Date(event.date).toLocaleDateString('en-IN', {
+                        day: 'numeric',
+                        month: 'short',
+                        year: 'numeric',
+                      })}
+                    </p>
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={() => handleAction(`View ${event.name}`)}>
+                    View
+                  </Button>
                 </div>
-                <Button variant="ghost" size="sm" onClick={() => handleAction(`View ${event.name}`)}>
-                  View
-                </Button>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p className="text-center text-muted-foreground py-4">No upcoming events</p>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -233,25 +309,25 @@ export function AdminDashboardContent({ isDemo = false }: AdminDashboardContentP
           <div className="space-y-2">
             <div className="flex justify-between text-sm">
               <span>Overall Collection</span>
-              <span className="font-medium">{admin.schoolStats.feeCollected}%</span>
+              <span className="font-medium">{stats.feeCollectionRate}%</span>
             </div>
-            <Progress value={admin.schoolStats.feeCollected} className="h-3" />
+            <Progress value={stats.feeCollectionRate} className="h-3" />
           </div>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4">
             <div className="text-center p-3 rounded-lg bg-green-50">
-              <p className="text-2xl font-bold text-green-600">₹45L</p>
+              <p className="text-2xl font-bold text-green-600">{formatCurrency(stats.totalFeeCollected)}</p>
               <p className="text-xs text-muted-foreground">Collected</p>
             </div>
             <div className="text-center p-3 rounded-lg bg-orange-50">
-              <p className="text-2xl font-bold text-orange-600">₹8L</p>
+              <p className="text-2xl font-bold text-orange-600">{formatCurrency(stats.totalFeePending)}</p>
               <p className="text-xs text-muted-foreground">Pending</p>
             </div>
             <div className="text-center p-3 rounded-lg bg-blue-50">
-              <p className="text-2xl font-bold text-blue-600">₹53L</p>
+              <p className="text-2xl font-bold text-blue-600">{formatCurrency(stats.totalFeeExpected)}</p>
               <p className="text-xs text-muted-foreground">Total Expected</p>
             </div>
             <div className="text-center p-3 rounded-lg bg-red-50">
-              <p className="text-2xl font-bold text-red-600">15</p>
+              <p className="text-2xl font-bold text-red-600">{stats.overdueInvoices}</p>
               <p className="text-xs text-muted-foreground">Overdue</p>
             </div>
           </div>
