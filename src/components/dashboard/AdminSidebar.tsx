@@ -13,6 +13,8 @@ import {
   BarChart3,
   Settings,
   LogOut,
+  FileText,
+  ClipboardList,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -23,14 +25,17 @@ import { demoAdmin } from '@/lib/demo-data';
 const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/admin/dashboard' },
   { icon: BarChart3, label: 'Analytics', path: '/admin/analytics' },
+  { icon: FileText, label: 'Reports', path: '/admin/reports' },
   { icon: GraduationCap, label: 'Students', path: '/admin/students' },
   { icon: Users, label: 'Parents', path: '/admin/parents' },
   { icon: BookOpen, label: 'Teachers', path: '/admin/teachers' },
   { icon: School, label: 'Classes', path: '/admin/classes' },
   { icon: Calendar, label: 'Timetable', path: '/admin/timetable' },
   { icon: ClipboardCheck, label: 'Attendance', path: '/admin/attendance' },
+  { icon: ClipboardList, label: 'Exams', path: '/admin/exams' },
   { icon: Megaphone, label: 'Announcements', path: '/admin/announcements' },
   { icon: CreditCard, label: 'Fee Management', path: '/admin/fees' },
+  { icon: Settings, label: 'Settings', path: '/admin/settings' },
 ];
 
 const demoNavItems = navItems.map(item => ({
