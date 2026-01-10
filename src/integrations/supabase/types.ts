@@ -143,6 +143,263 @@ export type Database = {
           },
         ]
       }
+      book_issues: {
+        Row: {
+          book_id: string
+          created_at: string
+          due_date: string
+          fine_amount: number | null
+          fine_paid: boolean | null
+          id: string
+          issue_date: string
+          issued_by: string | null
+          remarks: string | null
+          return_date: string | null
+          status: string
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          book_id: string
+          created_at?: string
+          due_date: string
+          fine_amount?: number | null
+          fine_paid?: boolean | null
+          id?: string
+          issue_date?: string
+          issued_by?: string | null
+          remarks?: string | null
+          return_date?: string | null
+          status?: string
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          book_id?: string
+          created_at?: string
+          due_date?: string
+          fine_amount?: number | null
+          fine_paid?: boolean | null
+          id?: string
+          issue_date?: string
+          issued_by?: string | null
+          remarks?: string | null
+          return_date?: string | null
+          status?: string
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "book_issues_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "book_issues_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      book_reservations: {
+        Row: {
+          book_id: string
+          created_at: string
+          expiry_date: string
+          id: string
+          reservation_date: string
+          status: string
+          student_id: string
+        }
+        Insert: {
+          book_id: string
+          created_at?: string
+          expiry_date?: string
+          id?: string
+          reservation_date?: string
+          status?: string
+          student_id: string
+        }
+        Update: {
+          book_id?: string
+          created_at?: string
+          expiry_date?: string
+          id?: string
+          reservation_date?: string
+          status?: string
+          student_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "book_reservations_book_id_fkey"
+            columns: ["book_id"]
+            isOneToOne: false
+            referencedRelation: "books"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "book_reservations_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      books: {
+        Row: {
+          author: string
+          available_copies: number
+          category: string
+          cover_url: string | null
+          created_at: string
+          description: string | null
+          id: string
+          isbn: string | null
+          location: string | null
+          publication_year: number | null
+          publisher: string | null
+          title: string
+          total_copies: number
+          updated_at: string
+        }
+        Insert: {
+          author: string
+          available_copies?: number
+          category?: string
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          isbn?: string | null
+          location?: string | null
+          publication_year?: number | null
+          publisher?: string | null
+          title: string
+          total_copies?: number
+          updated_at?: string
+        }
+        Update: {
+          author?: string
+          available_copies?: number
+          category?: string
+          cover_url?: string | null
+          created_at?: string
+          description?: string | null
+          id?: string
+          isbn?: string | null
+          location?: string | null
+          publication_year?: number | null
+          publisher?: string | null
+          title?: string
+          total_copies?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      bus_routes: {
+        Row: {
+          created_at: string
+          distance_km: number | null
+          end_location: string
+          evening_time: string | null
+          id: string
+          is_active: boolean | null
+          monthly_fee: number
+          morning_time: string | null
+          route_name: string
+          route_number: string | null
+          start_location: string
+          stops: Json | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          distance_km?: number | null
+          end_location: string
+          evening_time?: string | null
+          id?: string
+          is_active?: boolean | null
+          monthly_fee?: number
+          morning_time?: string | null
+          route_name: string
+          route_number?: string | null
+          start_location: string
+          stops?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          distance_km?: number | null
+          end_location?: string
+          evening_time?: string | null
+          id?: string
+          is_active?: boolean | null
+          monthly_fee?: number
+          morning_time?: string | null
+          route_name?: string
+          route_number?: string | null
+          start_location?: string
+          stops?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      buses: {
+        Row: {
+          bus_number: string
+          capacity: number
+          conductor_name: string | null
+          conductor_phone: string | null
+          created_at: string
+          driver_name: string | null
+          driver_phone: string | null
+          id: string
+          is_active: boolean | null
+          route_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          bus_number: string
+          capacity?: number
+          conductor_name?: string | null
+          conductor_phone?: string | null
+          created_at?: string
+          driver_name?: string | null
+          driver_phone?: string | null
+          id?: string
+          is_active?: boolean | null
+          route_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          bus_number?: string
+          capacity?: number
+          conductor_name?: string | null
+          conductor_phone?: string | null
+          created_at?: string
+          driver_name?: string | null
+          driver_phone?: string | null
+          id?: string
+          is_active?: boolean | null
+          route_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "buses_route_id_fkey"
+            columns: ["route_id"]
+            isOneToOne: false
+            referencedRelation: "bus_routes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       class_sessions: {
         Row: {
           class_id: string
@@ -976,6 +1233,67 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      student_transport: {
+        Row: {
+          academic_year: string
+          bus_id: string
+          created_at: string
+          drop_point: string | null
+          id: string
+          is_active: boolean | null
+          pickup_point: string
+          route_id: string
+          student_id: string
+          updated_at: string
+        }
+        Insert: {
+          academic_year?: string
+          bus_id: string
+          created_at?: string
+          drop_point?: string | null
+          id?: string
+          is_active?: boolean | null
+          pickup_point: string
+          route_id: string
+          student_id: string
+          updated_at?: string
+        }
+        Update: {
+          academic_year?: string
+          bus_id?: string
+          created_at?: string
+          drop_point?: string | null
+          id?: string
+          is_active?: boolean | null
+          pickup_point?: string
+          route_id?: string
+          student_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "student_transport_bus_id_fkey"
+            columns: ["bus_id"]
+            isOneToOne: false
+            referencedRelation: "buses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_transport_route_id_fkey"
+            columns: ["route_id"]
+            isOneToOne: false
+            referencedRelation: "bus_routes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "student_transport_student_id_fkey"
+            columns: ["student_id"]
+            isOneToOne: false
+            referencedRelation: "students"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       students: {
         Row: {
