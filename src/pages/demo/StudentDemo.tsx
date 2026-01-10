@@ -13,6 +13,9 @@ import { StudentHomeworkPage } from '@/components/student/StudentHomeworkPage';
 import { StudentAnnouncementsPage } from '@/components/student/StudentAnnouncementsPage';
 import { StudentLeavePage } from '@/components/student/StudentLeavePage';
 import { StudentExamsPage } from '@/components/student/StudentExamsPage';
+import { StudentLibraryPage } from '@/components/student/StudentLibraryPage';
+import { StudentTransportPage } from '@/components/student/StudentTransportPage';
+import { StudentPaymentPage } from '@/components/student/StudentPaymentPage';
 import { ProfilePage } from '@/components/profile/ProfilePage';
 
 export default function StudentDemo() {
@@ -36,6 +39,9 @@ export default function StudentDemo() {
           <Route path="announcements" element={<StudentAnnouncementsPage />} />
           <Route path="leave" element={<StudentLeavePage />} />
           <Route path="fees" element={<StudentFeePage />} />
+          <Route path="payments" element={<StudentPaymentPage />} />
+          <Route path="library" element={<StudentLibraryPage />} />
+          <Route path="transport" element={<StudentTransportPage />} />
           <Route path="profile" element={<ProfilePage />} />
         </Routes>
       </DashboardLayout>

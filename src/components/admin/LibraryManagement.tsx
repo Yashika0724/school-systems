@@ -9,6 +9,7 @@ import {
   AlertCircle,
   CheckCircle,
   RotateCcw,
+  Send,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -47,13 +48,57 @@ import {
   useLibraryStats,
   useCreateBook,
   useReturnBook,
+  useIssueBook,
+  Book,
 } from '@/hooks/useLibrary';
+import { supabase } from '@/integrations/supabase/client';
+import { useQuery } from '@tanstack/react-query';
+
+// Hook to get all students for issuing books
+function useAllStudents() {
+  return useQuery({
+    queryKey: ['all-students-for-library'],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('students')
+        .select(`
+          id,
+          roll_number,
+          user_id,
+          class:classes(id, name, section)
+        `)
+        .order('roll_number');
+
+      if (error) throw error;
+
+      // Get profiles for students
+      const userIds = data.map(s => s.user_id);
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, full_name')
+        .in('user_id', userIds);
+
+      if (profilesError) throw profilesError;
+
+      const profileMap = new Map(profiles.map(p => [p.user_id, p.full_name]));
+
+      return data.map(s => ({
+        ...s,
+        full_name: profileMap.get(s.user_id) || 'Unknown',
+      }));
+    },
+  });
+}
 
 export function LibraryManagement() {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [isAddBookOpen, setIsAddBookOpen] = useState(false);
+  const [isIssueBookOpen, setIsIssueBookOpen] = useState(false);
+  const [selectedBook, setSelectedBook] = useState<Book | null>(null);
+  const [selectedStudentId, setSelectedStudentId] = useState('');
+  const [dueDate, setDueDate] = useState('');
   const [newBook, setNewBook] = useState({
     title: '',
     author: '',
@@ -70,9 +115,11 @@ export function LibraryManagement() {
   const { data: categories } = useBookCategories();
   const { data: issues, isLoading: issuesLoading } = useAllBookIssues(statusFilter !== 'all' ? statusFilter : undefined);
   const { data: stats, isLoading: statsLoading } = useLibraryStats();
+  const { data: students } = useAllStudents();
 
   const createBook = useCreateBook();
   const returnBook = useReturnBook();
+  const issueBook = useIssueBook();
 
   const handleCreateBook = async () => {
     if (!newBook.title || !newBook.author) return;
@@ -107,6 +154,30 @@ export function LibraryManagement() {
 
   const handleReturnBook = async (issueId: string) => {
     await returnBook.mutateAsync(issueId);
+  };
+
+  const handleIssueBook = async () => {
+    if (!selectedBook || !selectedStudentId || !dueDate) return;
+
+    await issueBook.mutateAsync({
+      book_id: selectedBook.id,
+      student_id: selectedStudentId,
+      due_date: dueDate,
+    });
+
+    setIsIssueBookOpen(false);
+    setSelectedBook(null);
+    setSelectedStudentId('');
+    setDueDate('');
+  };
+
+  const openIssueDialog = (book: Book) => {
+    setSelectedBook(book);
+    // Default due date to 14 days from now
+    const defaultDue = new Date();
+    defaultDue.setDate(defaultDue.getDate() + 14);
+    setDueDate(defaultDue.toISOString().split('T')[0]);
+    setIsIssueBookOpen(true);
   };
 
   const filteredBooks = books?.filter(
@@ -236,6 +307,60 @@ export function LibraryManagement() {
         </Dialog>
       </div>
 
+      {/* Issue Book Dialog */}
+      <Dialog open={isIssueBookOpen} onOpenChange={setIsIssueBookOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Issue Book</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 pt-4">
+            {selectedBook && (
+              <div className="p-4 bg-muted rounded-lg">
+                <p className="font-medium">{selectedBook.title}</p>
+                <p className="text-sm text-muted-foreground">{selectedBook.author}</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Available: {selectedBook.available_copies} / {selectedBook.total_copies}
+                </p>
+              </div>
+            )}
+
+            <div className="space-y-2">
+              <Label>Select Student *</Label>
+              <Select value={selectedStudentId} onValueChange={setSelectedStudentId}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select a student" />
+                </SelectTrigger>
+                <SelectContent>
+                  {students?.map(student => (
+                    <SelectItem key={student.id} value={student.id}>
+                      {student.full_name} ({student.roll_number || 'No roll'}) - {student.class?.name} {student.class?.section}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="space-y-2">
+              <Label>Due Date *</Label>
+              <Input
+                type="date"
+                value={dueDate}
+                onChange={(e) => setDueDate(e.target.value)}
+                min={new Date().toISOString().split('T')[0]}
+              />
+            </div>
+
+            <Button 
+              onClick={handleIssueBook} 
+              className="w-full" 
+              disabled={issueBook.isPending || !selectedStudentId || !dueDate}
+            >
+              {issueBook.isPending ? 'Issuing...' : 'Issue Book'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
       {/* Stats */}
       <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
         {statsLoading ? (
@@ -357,6 +482,7 @@ export function LibraryManagement() {
                       <TableHead>Category</TableHead>
                       <TableHead>Available</TableHead>
                       <TableHead>Location</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -378,6 +504,17 @@ export function LibraryManagement() {
                           </span>
                         </TableCell>
                         <TableCell>{book.location || '-'}</TableCell>
+                        <TableCell className="text-right">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => openIssueDialog(book)}
+                            disabled={book.available_copies === 0}
+                          >
+                            <Send className="h-4 w-4 mr-1" />
+                            Issue
+                          </Button>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>

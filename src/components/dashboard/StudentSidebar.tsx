@@ -11,6 +11,8 @@ import {
   Megaphone,
   User,
   LogOut,
+  Library,
+  Bus,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -25,7 +27,9 @@ const navItems = [
   { icon: Calendar, label: 'Timetable', path: '/student/timetable' },
   { icon: BookOpen, label: 'Homework', path: '/student/homework' },
   { icon: GraduationCap, label: 'Exams', path: '/student/exams' },
-  { icon: CreditCard, label: 'Fee Details', path: '/student/fees' },
+  { icon: CreditCard, label: 'Fee & Payments', path: '/student/fees' },
+  { icon: Library, label: 'Library', path: '/student/library' },
+  { icon: Bus, label: 'Transport', path: '/student/transport' },
   { icon: Megaphone, label: 'Announcements', path: '/student/announcements' },
   { icon: CalendarDays, label: 'Leave Requests', path: '/student/leave' },
   { icon: User, label: 'Profile', path: '/student/profile' },
@@ -74,7 +78,7 @@ export function StudentSidebar({ isDemo = false }: StudentSidebarProps) {
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-1">
+      <nav className="flex-1 p-4 space-y-1 overflow-y-auto">
         {items.map((item) => {
           const isActive = location.pathname === item.path || 
             (item.path === `${basePath}/dashboard` && location.pathname === basePath);
