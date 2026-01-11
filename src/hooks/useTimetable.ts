@@ -60,31 +60,62 @@ export function useClassTimetable(classId: string | null) {
     queryFn: async (): Promise<TimetableSlot[]> => {
       if (!classId) return [];
 
-      const { data, error } = await supabase
+      // Step 1: Fetch timetable slots with subjects and teachers
+      const { data: slotsData, error: slotsError } = await supabase
         .from('timetable_slots')
         .select(`
           *,
           subject:subjects(id, name),
-          teacher:teachers(
-            id,
-            user_id,
-            profile:profiles!teachers_user_id_fkey(full_name)
-          )
+          teacher:teachers(id, user_id)
         `)
         .eq('class_id', classId)
         .order('day_of_week')
         .order('slot_number');
 
-      if (error) {
-        console.error('Error fetching timetable:', error);
+      if (slotsError) {
+        console.error('Error fetching timetable:', slotsError);
         return [];
       }
 
-      return (data || []).map(item => ({
-        ...item,
-        subject: Array.isArray(item.subject) ? item.subject[0] : item.subject,
-        teacher: Array.isArray(item.teacher) ? item.teacher[0] : item.teacher,
-      })) as TimetableSlot[];
+      if (!slotsData || slotsData.length === 0) return [];
+
+      // Step 2: Get all teacher user_ids and fetch their profiles
+      const teacherUserIds = slotsData
+        .map(slot => {
+          const teacher = Array.isArray(slot.teacher) ? slot.teacher[0] : slot.teacher;
+          return teacher?.user_id;
+        })
+        .filter((id): id is string => !!id);
+
+      let profilesMap: Record<string, string> = {};
+      if (teacherUserIds.length > 0) {
+        const { data: profilesData } = await supabase
+          .from('profiles')
+          .select('user_id, full_name')
+          .in('user_id', teacherUserIds);
+
+        if (profilesData) {
+          profilesMap = profilesData.reduce((acc, p) => {
+            acc[p.user_id] = p.full_name;
+            return acc;
+          }, {} as Record<string, string>);
+        }
+      }
+
+      // Step 3: Merge data
+      return slotsData.map(slot => {
+        const teacher = Array.isArray(slot.teacher) ? slot.teacher[0] : slot.teacher;
+        return {
+          ...slot,
+          subject: Array.isArray(slot.subject) ? slot.subject[0] : slot.subject,
+          teacher: teacher ? {
+            id: teacher.id,
+            profile: {
+              full_name: profilesMap[teacher.user_id] || 'Unknown',
+            },
+          } : null,
+        };
+      }) as TimetableSlot[];
     },
     enabled: !!classId,
   });
