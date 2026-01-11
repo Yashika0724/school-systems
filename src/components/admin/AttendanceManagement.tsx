@@ -49,19 +49,30 @@ function useClassStudents(classId: string | null) {
     queryKey: ['admin-class-students', classId],
     queryFn: async () => {
       if (!classId) return [];
-      const { data, error } = await supabase
+      
+      // First get students in the class
+      const { data: students, error: studentsError } = await supabase
         .from('students')
-        .select(`
-          id,
-          roll_number,
-          profile:profiles!students_user_id_fkey(full_name, avatar_url)
-        `)
+        .select('id, user_id, roll_number')
         .eq('class_id', classId)
         .order('roll_number');
-      if (error) throw error;
-      return (data || []).map(item => ({
-        ...item,
-        profile: Array.isArray(item.profile) ? item.profile[0] : item.profile,
+      
+      if (studentsError) throw studentsError;
+      if (!students || students.length === 0) return [];
+
+      // Then get profiles for those students
+      const userIds = students.map(s => s.user_id);
+      const { data: profiles, error: profilesError } = await supabase
+        .from('profiles')
+        .select('user_id, full_name, avatar_url')
+        .in('user_id', userIds);
+      
+      if (profilesError) throw profilesError;
+
+      // Merge the data
+      return students.map(student => ({
+        ...student,
+        profile: profiles?.find(p => p.user_id === student.user_id) || { full_name: 'Unknown', avatar_url: null },
       }));
     },
     enabled: !!classId,
