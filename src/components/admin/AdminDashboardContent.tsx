@@ -23,6 +23,14 @@ import { AdminSidebar } from '@/components/dashboard/AdminSidebar';
 import { useDemo } from '@/contexts/DemoContext';
 import { useAdminDashboardData } from '@/hooks/useAdminDashboard';
 import { Link } from 'react-router-dom';
+import { useState } from 'react';
+import { CreateUserDialog } from './CreateUserDialog';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 interface AdminDashboardContentProps {
   isDemo?: boolean;
@@ -37,6 +45,14 @@ export function AdminDashboardContent({ isDemo = false }: AdminDashboardContentP
     upcomingEvents: realEvents,
     isLoading,
   } = useAdminDashboardData();
+
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [createUserType, setCreateUserType] = useState<'student' | 'teacher' | 'parent'>('student');
+
+  const openCreateDialog = (type: 'student' | 'teacher' | 'parent') => {
+    setCreateUserType(type);
+    setIsCreateDialogOpen(true);
+  };
 
   // Use demo data in demo mode
   const admin = isDemo ? demoAdmin : {
@@ -106,7 +122,7 @@ export function AdminDashboardContent({ isDemo = false }: AdminDashboardContentP
               <AdminSidebar isDemo={isDemo} />
             </SheetContent>
           </Sheet>
-          
+
           <div>
             <h1 className="text-2xl font-bold">Admin Dashboard</h1>
             <p className="text-muted-foreground">Welcome back, {admin.name}</p>
@@ -114,22 +130,35 @@ export function AdminDashboardContent({ isDemo = false }: AdminDashboardContentP
         </div>
 
         <div className="flex items-center gap-3">
-          <Button 
-            onClick={() => handleAction('Add New User clicked')}
-            asChild={!isDemo}
-          >
-            {isDemo ? (
-              <>
-                <Plus className="h-4 w-4 mr-2" />
-                Add User
-              </>
-            ) : (
-              <Link to="/admin/users" className="flex items-center">
-                <Plus className="h-4 w-4 mr-2" />
-                Add User
-              </Link>
-            )}
-          </Button>
+          {isDemo ? (
+            <Button onClick={() => handleAction('Add New User clicked')}>
+              <Plus className="h-4 w-4 mr-2" />
+              Add User
+            </Button>
+          ) : (
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Add User
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end">
+                <DropdownMenuItem onClick={() => openCreateDialog('student')}>
+                  <GraduationCap className="h-4 w-4 mr-2" />
+                  Add Student
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => openCreateDialog('teacher')}>
+                  <BookOpen className="h-4 w-4 mr-2" />
+                  Add Teacher
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => openCreateDialog('parent')}>
+                  <Users className="h-4 w-4 mr-2" />
+                  Add Parent
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+          )}
           <Avatar className="h-10 w-10 border-2 border-primary">
             <AvatarImage src={admin.avatar || undefined} />
             <AvatarFallback>{admin.name.split(' ').map(n => n[0]).join('')}</AvatarFallback>
@@ -249,11 +278,10 @@ export function AdminDashboardContent({ isDemo = false }: AdminDashboardContentP
             {recentActivities.length > 0 ? (
               recentActivities.map((activity, index) => (
                 <div key={index} className="flex items-start gap-3">
-                  <div className={`h-2 w-2 rounded-full mt-2 ${
-                    activity.type === 'enrollment' ? 'bg-green-500' :
-                    activity.type === 'fee' ? 'bg-blue-500' :
-                    activity.type === 'leave' ? 'bg-orange-500' : 'bg-purple-500'
-                  }`} />
+                  <div className={`h-2 w-2 rounded-full mt-2 ${activity.type === 'enrollment' ? 'bg-green-500' :
+                      activity.type === 'fee' ? 'bg-blue-500' :
+                        activity.type === 'leave' ? 'bg-orange-500' : 'bg-purple-500'
+                    }`} />
                   <div>
                     <p className="text-sm">{activity.message}</p>
                     <p className="text-xs text-muted-foreground">{activity.time}</p>
@@ -333,6 +361,14 @@ export function AdminDashboardContent({ isDemo = false }: AdminDashboardContentP
           </div>
         </CardContent>
       </Card>
+
+      {!isDemo && (
+        <CreateUserDialog
+          open={isCreateDialogOpen}
+          onOpenChange={setIsCreateDialogOpen}
+          userType={createUserType}
+        />
+      )}
     </div>
   );
 }
