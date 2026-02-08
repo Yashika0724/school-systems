@@ -48,6 +48,7 @@ import {
   useFeeStats,
   useCreateFeeStructure,
   useRecordPayment,
+  useGenerateInvoices,
 } from '@/hooks/useFeeManagement';
 import { Skeleton } from '@/components/ui/skeleton';
 import { supabase } from '@/integrations/supabase/client';
@@ -60,6 +61,22 @@ export function FeeManagement() {
   const [paymentMethod, setPaymentMethod] = useState('cash');
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
   const [isStructureDialogOpen, setIsStructureDialogOpen] = useState(false);
+  const [isGenerateDialogOpen, setIsGenerateDialogOpen] = useState(false);
+
+  // Generation params
+  const [generationParams, setGenerationParams] = useState<{
+    class_id: string;
+    type: 'monthly' | 'term' | 'one-time' | 'yearly';
+    month: number;
+    term: number;
+    academic_year: string;
+  }>({
+    class_id: '',
+    type: 'monthly',
+    month: new Date().getMonth() + 1, // Current month
+    term: 1,
+    academic_year: '2024-25',
+  });
 
   // New structure form state
   const [newStructure, setNewStructure] = useState({
@@ -92,6 +109,8 @@ export function FeeManagement() {
 
   const createStructure = useCreateFeeStructure();
   const recordPayment = useRecordPayment();
+  // const generateInvoices = useGenerateInvoices();
+  const generateInvoices = { mutateAsync: async (data: any) => { console.log(data); }, isPending: false }; // Debugging mock
 
   const handleCreateStructure = async () => {
     if (!newStructure.class_id || !newStructure.category_id || !newStructure.amount) return;
@@ -123,6 +142,20 @@ export function FeeManagement() {
     setIsPaymentDialogOpen(false);
   };
 
+  const handleGenerateInvoices = async () => {
+    if (!generationParams.class_id) return;
+
+    await generateInvoices.mutateAsync({
+      class_id: generationParams.class_id,
+      type: generationParams.type,
+      month: generationParams.type === 'monthly' ? generationParams.month : undefined,
+      term: generationParams.type === 'term' ? generationParams.term : undefined,
+      academic_year: generationParams.academic_year,
+    });
+
+    setIsGenerateDialogOpen(false);
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'paid':
@@ -146,12 +179,117 @@ export function FeeManagement() {
 
   return (
     <div className="p-4 md:p-6 space-y-6">
+      <div className="bg-red-500 text-white p-2">DEBUG: FeeManagement is rendering</div>
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">Fee Management</h1>
           <p className="text-muted-foreground">Manage fee structures, invoices, and payments</p>
         </div>
         <div className="flex gap-2">
+          {/* <Dialog open={isGenerateDialogOpen} onOpenChange={setIsGenerateDialogOpen}>
+            <DialogTrigger asChild>
+              <Button variant="default">
+                <Receipt className="h-4 w-4 mr-2" />
+                Generate Invoices
+              </Button>
+            </DialogTrigger>
+            <DialogContent>
+              <DialogHeader>
+                <DialogTitle>Generate Fee Invoices</DialogTitle>
+              </DialogHeader>
+              <div className="space-y-4 pt-4">
+                <div className="space-y-2">
+                  <Label>Class</Label>
+                  <Select
+                    value={generationParams.class_id}
+                    onValueChange={(v) => setGenerationParams(prev => ({ ...prev, class_id: v }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select class" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {classes?.map(cls => (
+                        <SelectItem key={cls.id} value={cls.id}>{cls.name} {cls.section}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Fee Type</Label>
+                  <Select
+                    value={generationParams.type}
+                    onValueChange={(v: any) => setGenerationParams(prev => ({ ...prev, type: v }))}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="monthly">Monthly</SelectItem>
+                      <SelectItem value="term">Term/Quarterly</SelectItem>
+                      <SelectItem value="yearly">Yearly</SelectItem>
+                      <SelectItem value="one-time">One-time</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {generationParams.type === 'monthly' && (
+                  <div className="space-y-2">
+                    <Label>Month</Label>
+                    <Select
+                      value={generationParams.month.toString()}
+                      onValueChange={(v) => setGenerationParams(prev => ({ ...prev, month: parseInt(v) }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {Array.from({ length: 12 }, (_, i) => i + 1).map(month => (
+                          <SelectItem key={month} value={month.toString()}>
+                            {new Date(2024, month - 1, 1).toLocaleString('default', { month: 'long' })}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                {generationParams.type === 'term' && (
+                  <div className="space-y-2">
+                    <Label>Term</Label>
+                    <Select
+                      value={generationParams.term.toString()}
+                      onValueChange={(v) => setGenerationParams(prev => ({ ...prev, term: parseInt(v) }))}
+                    >
+                      <SelectTrigger>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="1">Term 1</SelectItem>
+                        <SelectItem value="2">Term 2</SelectItem>
+                        <SelectItem value="3">Term 3</SelectItem>
+                        <SelectItem value="4">Term 4</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
+                )}
+
+                <div className="space-y-2">
+                   <Label>Academic Year</Label>
+                   <Input value={generationParams.academic_year} readOnly />
+                </div>
+
+                <Button
+                  onClick={handleGenerateInvoices}
+                  className="w-full"
+                  disabled={generateInvoices.isPending || !generationParams.class_id}
+                >
+                  {generateInvoices.isPending ? 'Generating...' : 'Generate Invoices'}
+                </Button>
+              </div>
+            </DialogContent>
+          </Dialog> */}
+
           <Dialog open={isStructureDialogOpen} onOpenChange={setIsStructureDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="outline">
@@ -317,9 +455,9 @@ export function FeeManagement() {
                   {Math.round((stats.totalCollected / stats.totalExpected) * 100)}%
                 </span>
               </div>
-              <Progress 
-                value={(stats.totalCollected / stats.totalExpected) * 100} 
-                className="h-3" 
+              <Progress
+                value={(stats.totalCollected / stats.totalExpected) * 100}
+                className="h-3"
               />
             </div>
           </CardContent>
@@ -393,8 +531,8 @@ export function FeeManagement() {
                   </TableHeader>
                   <TableBody>
                     {invoices
-                      .filter(inv => 
-                        !searchQuery || 
+                      .filter(inv =>
+                        !searchQuery ||
                         inv.invoice_number.toLowerCase().includes(searchQuery.toLowerCase())
                       )
                       .map((invoice) => (
@@ -422,8 +560,8 @@ export function FeeManagement() {
                                 if (!open) setSelectedInvoice(null);
                               }}>
                                 <DialogTrigger asChild>
-                                  <Button 
-                                    variant="outline" 
+                                  <Button
+                                    variant="outline"
                                     size="sm"
                                     onClick={() => setSelectedInvoice(invoice.id)}
                                   >
@@ -466,8 +604,8 @@ export function FeeManagement() {
                                         </SelectContent>
                                       </Select>
                                     </div>
-                                    <Button 
-                                      onClick={handleRecordPayment} 
+                                    <Button
+                                      onClick={handleRecordPayment}
                                       className="w-full"
                                       disabled={recordPayment.isPending || !paymentAmount}
                                     >
@@ -529,8 +667,8 @@ export function FeeManagement() {
                 <div className="p-8 text-center text-muted-foreground">
                   <DollarSign className="h-12 w-12 mx-auto mb-4 opacity-50" />
                   <p>No fee structures configured</p>
-                  <Button 
-                    variant="outline" 
+                  <Button
+                    variant="outline"
                     className="mt-4"
                     onClick={() => setIsStructureDialogOpen(true)}
                   >

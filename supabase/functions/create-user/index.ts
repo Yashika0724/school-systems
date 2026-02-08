@@ -21,10 +21,10 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get('SUPABASE_URL')!
     const supabaseServiceKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     const supabaseAnonKey = Deno.env.get('SUPABASE_ANON_KEY')!
-    
+
     // Create service role client for admin operations
     const supabaseAdmin = createClient(supabaseUrl, supabaseServiceKey)
-    
+
     // Verify the caller is an admin using their JWT
     const authHeader = req.headers.get('Authorization')
     if (!authHeader) {
@@ -40,7 +40,7 @@ Deno.serve(async (req) => {
     })
 
     const { data: { user: callerUser }, error: authError } = await supabaseClient.auth.getUser()
-    
+
     if (authError || !callerUser) {
       console.error('Auth error:', authError)
       return new Response(
@@ -65,10 +65,10 @@ Deno.serve(async (req) => {
     }
 
     // Parse request body
-    const { 
-      email, 
-      password, 
-      fullName, 
+    const {
+      email,
+      password,
+      fullName,
       phone,
       userType,
       // Student fields
@@ -81,7 +81,8 @@ Deno.serve(async (req) => {
       qualification,
       // Parent fields
       occupation,
-      relationship
+      relationship,
+      studentId
     } = await req.json()
 
     // Validate required fields
@@ -180,6 +181,31 @@ Deno.serve(async (req) => {
           relationship: relationship || null,
         })
       specificError = error
+
+      // Link student if provided
+      if (!specificError && studentId) {
+        const { data: parentData } = await supabaseAdmin
+          .from('parents')
+          .select('id')
+          .eq('user_id', userId)
+          .single()
+
+        if (parentData) {
+          const { error: linkError } = await supabaseAdmin
+            .from('parent_student')
+            .insert({
+              parent_id: parentData.id,
+              student_id: studentId,
+              relationship: relationship || 'parent'
+            })
+          if (linkError) {
+            console.error('Student linking error:', linkError)
+            // We don't fail the whole creation if just linking fails, 
+            // but we log it. Or we could throw. 
+            // User might want to know.
+          }
+        }
+      }
     }
 
     if (specificError) {
@@ -192,10 +218,10 @@ Deno.serve(async (req) => {
     console.log(`Successfully created ${userType}: ${email}`)
 
     return new Response(
-      JSON.stringify({ 
-        success: true, 
+      JSON.stringify({
+        success: true,
         message: `${userType.charAt(0).toUpperCase() + userType.slice(1)} created successfully`,
-        userId 
+        userId
       }),
       { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
     )

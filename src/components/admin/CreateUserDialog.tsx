@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
 import {
@@ -51,6 +51,7 @@ const teacherSchema = baseSchema.extend({
 const parentSchema = baseSchema.extend({
   occupation: z.string().optional(),
   relationship: z.string().optional(),
+  studentId: z.string().optional(),
 });
 
 export function CreateUserDialog({ open, onOpenChange, userType }: CreateUserDialogProps) {
@@ -64,20 +65,24 @@ export function CreateUserDialog({ open, onOpenChange, userType }: CreateUserDia
   const [password, setPassword] = useState('');
   const [fullName, setFullName] = useState('');
   const [phone, setPhone] = useState('');
-  
+
   // Student-specific
   const [classId, setClassId] = useState('');
   const [rollNumber, setRollNumber] = useState('');
   const [admissionNumber, setAdmissionNumber] = useState('');
-  
+
   // Teacher-specific
   const [employeeId, setEmployeeId] = useState('');
   const [designation, setDesignation] = useState('');
   const [qualification, setQualification] = useState('');
-  
+
   // Parent-specific
   const [occupation, setOccupation] = useState('');
   const [relationship, setRelationship] = useState('');
+  const [studentSearch, setStudentSearch] = useState('');
+  const [studentResults, setStudentResults] = useState<any[]>([]);
+  const [selectedStudent, setSelectedStudent] = useState<any>(null);
+  const [isSearchingStudents, setIsSearchingStudents] = useState(false);
 
   const resetForm = () => {
     setEmail('');
@@ -92,13 +97,16 @@ export function CreateUserDialog({ open, onOpenChange, userType }: CreateUserDia
     setQualification('');
     setOccupation('');
     setRelationship('');
+    setStudentSearch('');
+    setStudentResults([]);
+    setSelectedStudent(null);
     setErrors({});
   };
 
   const validateForm = () => {
     try {
       const baseData = { email, password, fullName, phone };
-      
+
       if (userType === 'student') {
         studentSchema.parse({ ...baseData, classId, rollNumber, admissionNumber });
       } else if (userType === 'teacher') {
@@ -106,7 +114,7 @@ export function CreateUserDialog({ open, onOpenChange, userType }: CreateUserDia
       } else {
         parentSchema.parse({ ...baseData, occupation, relationship });
       }
-      
+
       setErrors({});
       return true;
     } catch (error) {
@@ -123,11 +131,63 @@ export function CreateUserDialog({ open, onOpenChange, userType }: CreateUserDia
     }
   };
 
+  // Student search effect
+  useEffect(() => {
+    const searchStudents = async () => {
+      if (studentSearch.length < 2) {
+        setStudentResults([]);
+        return;
+      }
+
+      setIsSearchingStudents(true);
+      try {
+        const { data, error } = await supabase
+          .from('students')
+          .select(`
+            id,
+            roll_number,
+            profile:profiles!inner (
+              user_id,
+              full_name
+            ),
+            classes (
+              name,
+              section
+            )
+          `)
+          .or(`roll_number.ilike.%${studentSearch}%,profile.full_name.ilike.%${studentSearch}%`)
+          .limit(5);
+
+        if (error) {
+          console.error('Search error:', error);
+          throw error;
+        }
+
+        // Map results if they come back as arrays (though with 1-to-1 it might be objects)
+        const mappedResults = data?.map(item => ({
+          ...item,
+          // Handle cases where profile/classes might be an array or object
+          profile: Array.isArray(item.profile) ? item.profile[0] : item.profile,
+          classes: Array.isArray(item.classes) ? item.classes[0] : item.classes
+        })) || [];
+
+        setStudentResults(mappedResults);
+      } catch (err) {
+        console.error('Error searching students:', err);
+      } finally {
+        setIsSearchingStudents(false);
+      }
+    };
+
+    const timer = setTimeout(searchStudents, 300);
+    return () => clearTimeout(timer);
+  }, [studentSearch]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) return;
-    
+
     setIsLoading(true);
 
     try {
@@ -150,6 +210,7 @@ export function CreateUserDialog({ open, onOpenChange, userType }: CreateUserDia
           // Parent fields
           occupation: occupation || null,
           relationship: relationship || null,
+          studentId: selectedStudent?.id || null,
         },
       });
 
@@ -157,7 +218,7 @@ export function CreateUserDialog({ open, onOpenChange, userType }: CreateUserDia
       if (data?.error) throw new Error(data.error);
 
       toast.success(`${userType.charAt(0).toUpperCase() + userType.slice(1)} created successfully!`);
-      
+
       // Invalidate queries
       queryClient.invalidateQueries({ queryKey: ['all-students'] });
       queryClient.invalidateQueries({ queryKey: ['all-teachers'] });
@@ -168,7 +229,7 @@ export function CreateUserDialog({ open, onOpenChange, userType }: CreateUserDia
       onOpenChange(false);
     } catch (error: any) {
       console.error('Error creating user:', error);
-      
+
       if (error.message?.includes('already registered') || error.message?.includes('already been registered')) {
         toast.error('A user with this email already exists');
       } else {
@@ -257,7 +318,7 @@ export function CreateUserDialog({ open, onOpenChange, userType }: CreateUserDia
           {userType === 'student' && (
             <div className="space-y-4 pt-4 border-t">
               <h4 className="text-sm font-medium text-muted-foreground">Student Details</h4>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="classId">Class</Label>
                 <Select value={classId} onValueChange={setClassId}>
@@ -301,7 +362,7 @@ export function CreateUserDialog({ open, onOpenChange, userType }: CreateUserDia
           {userType === 'teacher' && (
             <div className="space-y-4 pt-4 border-t">
               <h4 className="text-sm font-medium text-muted-foreground">Teacher Details</h4>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="employeeId">Employee ID</Label>
                 <Input
@@ -338,7 +399,7 @@ export function CreateUserDialog({ open, onOpenChange, userType }: CreateUserDia
           {userType === 'parent' && (
             <div className="space-y-4 pt-4 border-t">
               <h4 className="text-sm font-medium text-muted-foreground">Parent Details</h4>
-              
+
               <div className="space-y-2">
                 <Label htmlFor="occupation">Occupation</Label>
                 <Input
@@ -361,6 +422,67 @@ export function CreateUserDialog({ open, onOpenChange, userType }: CreateUserDia
                     <SelectItem value="guardian">Guardian</SelectItem>
                   </SelectContent>
                 </Select>
+              </div>
+
+              <div className="space-y-2 pt-2">
+                <Label>Link Student</Label>
+                <div className="relative">
+                  <Input
+                    placeholder="Search by name or roll number..."
+                    value={studentSearch}
+                    onChange={(e) => setStudentSearch(e.target.value)}
+                    disabled={!!selectedStudent}
+                  />
+                  {isSearchingStudents && (
+                    <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                    </div>
+                  )}
+
+                  {studentResults.length > 0 && !selectedStudent && (
+                    <div className="absolute z-10 w-full mt-1 bg-popover border rounded-md shadow-lg max-h-60 overflow-auto">
+                      {studentResults.map((result) => (
+                        <div
+                          key={result.id}
+                          className="p-2 hover:bg-accent cursor-pointer border-b last:border-0"
+                          onClick={() => {
+                            setSelectedStudent(result);
+                            setStudentSearch(result.profile?.full_name);
+                            setStudentResults([]);
+                          }}
+                        >
+                          <p className="font-medium text-sm">{result.profile?.full_name}</p>
+                          <p className="text-xs text-muted-foreground">
+                            Roll: {result.roll_number || 'N/A'} |
+                            Class: {result.classes?.name}{result.classes?.section}
+                          </p>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+
+                {selectedStudent && (
+                  <div className="mt-2 p-2 bg-primary/5 border border-primary/20 rounded-md flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-medium">{selectedStudent.profile?.full_name}</p>
+                      <p className="text-xs text-muted-foreground">
+                        Linked Student
+                      </p>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="h-8 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+                      onClick={() => {
+                        setSelectedStudent(null);
+                        setStudentSearch('');
+                      }}
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                )}
               </div>
             </div>
           )}

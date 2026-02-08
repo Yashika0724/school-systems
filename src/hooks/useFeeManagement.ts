@@ -242,7 +242,7 @@ export function useFeeStats() {
       invoices?.forEach(inv => {
         stats.totalExpected += Number(inv.total_amount);
         stats.totalCollected += Number(inv.paid_amount);
-        
+
         if (inv.status === 'paid') stats.paidCount++;
         else if (inv.status === 'partial') stats.partialCount++;
         else if (inv.status === 'overdue') stats.overdueCount++;
@@ -365,15 +365,15 @@ export function useRecordPayment() {
       if (invoiceError) throw invoiceError;
 
       const newPaidAmount = Number(invoice.paid_amount) + data.amount;
-      const newStatus = newPaidAmount >= Number(invoice.total_amount) 
-        ? 'paid' 
-        : newPaidAmount > 0 
-          ? 'partial' 
+      const newStatus = newPaidAmount >= Number(invoice.total_amount)
+        ? 'paid'
+        : newPaidAmount > 0
+          ? 'partial'
           : 'pending';
 
       const { error: updateError } = await supabase
         .from('fee_invoices')
-        .update({ 
+        .update({
           paid_amount: newPaidAmount,
           status: newStatus,
         })
@@ -390,6 +390,152 @@ export function useRecordPayment() {
     },
     onError: (error: Error) => {
       toast.error(`Failed to record payment: ${error.message}`);
+    },
+  });
+}
+
+export function useGenerateInvoices() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (data: {
+      class_id: string;
+      month?: number;
+      term?: number; // 1, 2, 3 etc
+      academic_year: string;
+      type: 'monthly' | 'term' | 'one-time' | 'yearly';
+    }) => {
+      // 1. Get all students in the class
+      const { data: students, error: studentsError } = await supabase
+        .from('students')
+        .select('id')
+        .eq('class_id', data.class_id);
+
+      if (studentsError) throw studentsError;
+      if (!students || students.length === 0) throw new Error('No students found in this class');
+
+      // 2. Get applicable fee structures
+      let structureQuery = supabase
+        .from('fee_structures')
+        .select('*, category:fee_categories(*)')
+        .eq('class_id', data.class_id)
+        .eq('academic_year', data.academic_year);
+
+      // Filter by type/frequency
+      if (data.type === 'monthly') {
+        structureQuery = structureQuery.eq('frequency', 'monthly');
+      } else if (data.type === 'term') {
+        structureQuery = structureQuery.eq('frequency', 'quarterly');
+      } else if (data.type === 'yearly') {
+        structureQuery = structureQuery.eq('frequency', 'yearly');
+      } else if (data.type === 'one-time') {
+        structureQuery = structureQuery.eq('frequency', 'one-time');
+      }
+
+      const { data: structures, error: structuresError } = await structureQuery;
+
+      if (structuresError) throw structuresError;
+      if (!structures || structures.length === 0) throw new Error('No fee structures found for this criteria');
+
+      // 3. Create invoices for each student
+      let successCount = 0;
+
+      // Calculate due date based on type
+      const now = new Date();
+      const currentYear = now.getFullYear();
+      let dueDate = new Date();
+
+      if (data.type === 'monthly' && data.month) {
+        // Due on 10th of the selected month
+        // Adjust year if selecting a month in the next calendar year part of the academic year
+        // For simplicity, assuming academic year 2024-25 starts in April 2024
+        // If data.month < 4 (Jan, Feb, Mar), it's next year (2025)
+        // If data.month >= 4, it's current year (2024)
+        // But we don't know the refined academic year start logic here easily without more config
+        // So we'll use a simple heuristic: if month is before current month, assume next year? 
+        // Or just use current year for now and let user edit. 
+        // Better: use the year from academic_year string? '2024-25' -> 2024
+        const startYear = parseInt(data.academic_year.split('-')[0]);
+        const year = data.month < 4 ? startYear + 1 : startYear;
+        dueDate = new Date(year, data.month - 1, 10);
+      } else {
+        // Default to due in 10 days
+        dueDate.setDate(dueDate.getDate() + 10);
+      }
+
+      const getInvoiceNumber = () => `INV-${Date.now()}-${Math.random().toString(36).substr(2, 6).toUpperCase()}`;
+
+      for (const student of students) {
+        try {
+          // Check for existing invoice
+          let checkQuery = supabase
+            .from('fee_invoices')
+            .select('id')
+            .eq('student_id', student.id)
+            .eq('academic_year', data.academic_year);
+
+          if (data.type === 'monthly' && data.month) {
+            checkQuery = checkQuery.eq('month', data.month);
+          } else if (data.type === 'term' && data.term) {
+            checkQuery = checkQuery.eq('quarter', data.term);
+          }
+
+          const { data: existing } = await checkQuery;
+
+          if (existing && existing.length > 0) {
+            continue;
+          }
+
+          const totalAmount = structures.reduce((sum, s) => sum + Number(s.amount), 0);
+          if (totalAmount <= 0) continue;
+
+          // Insert invoice
+          const { data: invoice, error: invError } = await supabase
+            .from('fee_invoices')
+            .insert({
+              invoice_number: getInvoiceNumber(),
+              student_id: student.id,
+              total_amount: totalAmount,
+              due_date: dueDate.toISOString(),
+              month: data.type === 'monthly' ? data.month : null,
+              quarter: data.type === 'term' ? data.term : null,
+              academic_year: data.academic_year,
+              status: 'pending'
+            })
+            .select()
+            .single();
+
+          if (invError) throw invError;
+
+          // Insert items
+          const items = structures.map(s => ({
+            invoice_id: invoice.id,
+            category_id: s.category_id,
+            description: `${s.category?.name} - ${data.type}`,
+            amount: s.amount
+          }));
+
+          const { error: itemsError } = await supabase
+            .from('fee_invoice_items')
+            .insert(items);
+
+          if (itemsError) throw itemsError;
+
+          successCount++;
+        } catch (e) {
+          console.error(`Failed to generate invoice for student ${student.id}`, e);
+        }
+      }
+
+      return { successCount, totalStudents: students.length };
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['all-invoices'] });
+      queryClient.invalidateQueries({ queryKey: ['fee-stats'] });
+      toast.success(`Generated ${data.successCount} invoices`);
+    },
+    onError: (error: Error) => {
+      toast.error(`Failed to generate invoices: ${error.message}`);
     },
   });
 }
