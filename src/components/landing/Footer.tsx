@@ -55,7 +55,7 @@ export function Footer() {
         </div>
 
         <div className="border-t border-background/20 mt-8 pt-8 text-center text-sm">
-          <p className="opacity-50">© 2024 knctED. All rights reserved.</p>
+          <p className="opacity-50">© 2026 KnctED. All rights reserved.</p>
           <p className="mt-2 text-xs opacity-40">A product by <span className="font-semibold text-blue-400/80">BU Ventures</span></p>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { Users, BookOpen, Shield, Sparkles } from 'lucide-react';
+import { Users, BookOpen, Shield, Sparkles, GraduationCap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useNavigate } from 'react-router-dom';
 import { motion, type Easing } from 'framer-motion';
@@ -24,22 +24,22 @@ export function HeroSection() {
   return (
     <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-purple-50 to-orange-50 pt-20 pb-32">
       {/* Animated decorative elements */}
-      <motion.div 
+      <motion.div
         className="absolute top-20 left-10 w-72 h-72 bg-student-gradient opacity-10 rounded-full blur-3xl"
         animate={{ scale: [1, 1.05, 1], opacity: [0.5, 0.8, 0.5] }}
         transition={{ duration: 3, repeat: Infinity, ease: easeOut }}
       />
-      <motion.div 
+      <motion.div
         className="absolute bottom-20 right-10 w-96 h-96 bg-teacher-gradient opacity-10 rounded-full blur-3xl"
         animate={{ scale: [1, 1.08, 1], opacity: [0.4, 0.7, 0.4] }}
         transition={{ duration: 4, repeat: Infinity, ease: easeOut, delay: 1.5 }}
       />
-      <motion.div 
+      <motion.div
         className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-gradient-to-r from-primary/5 to-purple-500/5 rounded-full blur-3xl"
         animate={{ rotate: 360 }}
         transition={{ duration: 60, repeat: Infinity, ease: "linear" }}
       />
-      
+
       {/* Floating particles */}
       {[...Array(6)].map((_, i) => (
         <motion.div
@@ -62,15 +62,15 @@ export function HeroSection() {
           }}
         />
       ))}
-      
-      <motion.div 
+
+      <motion.div
         className="container mx-auto px-4 relative z-10"
         variants={containerVariants}
         initial="hidden"
         animate="visible"
       >
         <div className="text-center max-w-4xl mx-auto">
-          <motion.div 
+          <motion.div
             className="inline-flex items-center gap-2 bg-white/80 backdrop-blur-sm rounded-full px-4 py-2 mb-6 shadow-md"
             variants={itemVariants}
             whileHover={{ scale: 1.05 }}
@@ -80,8 +80,8 @@ export function HeroSection() {
               Complete School Management Solution
             </span>
           </motion.div>
-          
-          <motion.h1 
+
+          <motion.h1
             className="text-5xl md:text-7xl font-bold mb-4"
             variants={itemVariants}
           >
@@ -92,23 +92,23 @@ export function HeroSection() {
               ED
             </span>
           </motion.h1>
-          
-          <motion.p 
+
+          <motion.p
             className="text-xl md:text-2xl text-muted-foreground mb-4 font-medium"
             variants={itemVariants}
           >
             Connecting Education, Empowering Futures
           </motion.p>
-          
-          <motion.p 
+
+          <motion.p
             className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto"
             variants={itemVariants}
           >
-            A comprehensive school management system designed for modern schools. 
+            A comprehensive school management system designed for modern schools.
             Connect students, parents, teachers, and administrators seamlessly.
           </motion.p>
-          
-          <motion.div 
+
+          <motion.div
             className="flex flex-col sm:flex-row gap-4 justify-center mb-12"
             variants={itemVariants}
           >
@@ -132,27 +132,30 @@ export function HeroSection() {
               </Button>
             </motion.div>
           </motion.div>
-          
+
           {/* Feature highlights with staggered animation */}
-          <motion.div 
+          <motion.div
             className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-3xl mx-auto"
             variants={containerVariants}
           >
             {[
-              { icon: Users, label: 'Student Portal', color: 'text-orange-500', gradient: 'from-orange-500/10 to-orange-600/10' },
-              { icon: Users, label: 'Parent Access', color: 'text-green-500', gradient: 'from-green-500/10 to-green-600/10' },
-              { icon: BookOpen, label: 'Teacher Tools', color: 'text-purple-500', gradient: 'from-purple-500/10 to-purple-600/10' },
-              { icon: Shield, label: 'Admin Control', color: 'text-blue-500', gradient: 'from-blue-500/10 to-blue-600/10' },
+              { icon: GraduationCap, label: 'Student Portal', color: 'text-orange-500', gradient: 'from-orange-500/10 to-orange-600/10', path: '/login/student' },
+              { icon: Users, label: 'Parent Access', color: 'text-green-500', gradient: 'from-green-500/10 to-green-600/10', path: '/login/parent' },
+              { icon: BookOpen, label: 'Teacher Tools', color: 'text-purple-500', gradient: 'from-purple-500/10 to-purple-600/10', path: '/login/teacher' },
+              { icon: Shield, label: 'Admin Control', color: 'text-blue-500', gradient: 'from-blue-500/10 to-blue-600/10', path: '/login/admin' },
             ].map((feature, index) => (
-              <motion.div
+              <motion.button
                 key={index}
-                className={`flex flex-col items-center gap-2 p-4 bg-gradient-to-br ${feature.gradient} backdrop-blur-sm rounded-xl shadow-sm border border-white/50`}
+                onClick={() => navigate(feature.path)}
+                className={`flex flex-col items-center gap-2 p-4 bg-gradient-to-br ${feature.gradient} backdrop-blur-sm rounded-xl shadow-sm border border-white/50 w-full transition-all duration-300`}
                 variants={itemVariants}
-                whileHover={{ 
-                  scale: 1.08, 
+                whileHover={{
+                  scale: 1.08,
                   y: -5,
-                  boxShadow: '0 10px 40px -10px rgba(0,0,0,0.1)'
+                  boxShadow: '0 10px 40px -10px rgba(0,0,0,0.1)',
+                  borderColor: 'rgba(255, 255, 255, 0.8)'
                 }}
+                whileTap={{ scale: 0.95 }}
                 transition={{ type: 'spring', stiffness: 300 }}
               >
                 <motion.div
@@ -162,7 +165,7 @@ export function HeroSection() {
                   <feature.icon className={`h-8 w-8 ${feature.color}`} />
                 </motion.div>
                 <span className="text-sm font-medium">{feature.label}</span>
-              </motion.div>
+              </motion.button>
             ))}
           </motion.div>
         </div>
