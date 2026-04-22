@@ -22,6 +22,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useParentData, useLinkedChildren } from '@/hooks/useParentData';
+import { useStudentTransportById } from '@/hooks/useTransportation';
 import { useDemo } from '@/contexts/DemoContext';
 
 // Demo data
@@ -54,9 +55,11 @@ export function ParentTransportPage() {
   const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
 
   const selectedChild = children?.find(c => c.student_id === selectedChildId);
+  const { data: realTransport, isLoading: transportLoading } = useStudentTransportById(
+    isDemo ? null : selectedChildId,
+  );
 
-  // In a real app, we'd fetch transport data for the selected child
-  const displayTransport = isDemo ? demoTransport : null;
+  const displayTransport = isDemo ? demoTransport : realTransport;
 
   const formatCurrency = (amount: number) => {
     return new Intl.NumberFormat('en-IN', {
@@ -132,6 +135,11 @@ export function ParentTransportPage() {
             </p>
           </CardContent>
         </Card>
+      ) : transportLoading ? (
+        <div className="space-y-4">
+          <Skeleton className="h-32" />
+          <Skeleton className="h-64" />
+        </div>
       ) : !displayTransport ? (
         <Card>
           <CardContent className="p-8 text-center">

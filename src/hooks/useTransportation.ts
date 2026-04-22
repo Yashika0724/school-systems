@@ -124,6 +124,24 @@ export function useStudentTransport() {
   });
 }
 
+export function useStudentTransportById(studentId: string | null | undefined) {
+  return useQuery({
+    queryKey: ['student-transport-by-id', studentId],
+    enabled: !!studentId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('student_transport')
+        .select(`*, bus:buses(*), route:bus_routes(*)`)
+        .eq('student_id', studentId!)
+        .eq('is_active', true)
+        .maybeSingle();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      return data as StudentTransport | null;
+    },
+  });
+}
+
 export function useAllStudentTransport() {
   return useQuery({
     queryKey: ['all-student-transport'],

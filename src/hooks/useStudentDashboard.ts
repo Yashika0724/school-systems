@@ -155,14 +155,28 @@ export function useStudentTodaySchedule() {
   });
 }
 
-// Get count of upcoming exams (placeholder - would need exam_schedule table)
+// Get count of upcoming exams for the student's class (today or later, not cancelled)
 export function useUpcomingExamsCount() {
+  const { data: studentData } = useStudentData();
+
   return useQuery({
-    queryKey: ['upcoming-exams-count'],
+    queryKey: ['upcoming-exams-count', studentData?.class_id],
     queryFn: async () => {
-      // Placeholder - in a real app, you'd have an exam_schedule table
-      return 0;
+      if (!studentData?.class_id) return 0;
+
+      const today = new Date().toISOString().slice(0, 10);
+
+      const { count, error } = await supabase
+        .from('exams')
+        .select('*', { count: 'exact', head: true })
+        .eq('class_id', studentData.class_id)
+        .gte('exam_date', today)
+        .neq('status', 'cancelled');
+
+      if (error) throw error;
+      return count ?? 0;
     },
+    enabled: !!studentData?.class_id,
   });
 }
 
@@ -174,8 +188,9 @@ export function useStudentDashboardData() {
   const { data: marks, isLoading: marksLoading } = useStudentMarks();
   const { data: homework, isLoading: homeworkLoading } = useStudentHomework();
   const { data: todaySchedule, isLoading: scheduleLoading } = useStudentTodaySchedule();
+  const { data: upcomingExamsCount, isLoading: upcomingExamsLoading } = useUpcomingExamsCount();
 
-  const isLoading = studentLoading || profileLoading || attendanceLoading || marksLoading || homeworkLoading || scheduleLoading;
+  const isLoading = studentLoading || profileLoading || attendanceLoading || marksLoading || homeworkLoading || scheduleLoading || upcomingExamsLoading;
 
   const pendingHomework = homework?.filter(hw => hw.status === 'pending') || [];
 
@@ -194,7 +209,7 @@ export function useStudentDashboardData() {
     homework: homework || [],
     pendingHomeworkCount: pendingHomework.length,
     todaySchedule: todaySchedule || [],
-    upcomingExams: 0,
+    upcomingExams: upcomingExamsCount ?? 0,
     isLoading,
   };
 }

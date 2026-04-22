@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Button } from '@/components/ui/button';
@@ -25,6 +25,10 @@ export function UserManagement({ defaultTab = 'students' }: UserManagementProps)
   const [searchQuery, setSearchQuery] = useState('');
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [createUserType, setCreateUserType] = useState<'student' | 'teacher' | 'parent'>('student');
+
+  useEffect(() => {
+    setActiveTab(defaultTab);
+  }, [defaultTab]);
 
   const handleCreateUser = (type: 'student' | 'teacher' | 'parent') => {
     setCreateUserType(type);

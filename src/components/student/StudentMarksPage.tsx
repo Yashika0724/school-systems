@@ -1,11 +1,12 @@
 import { useQuery } from '@tanstack/react-query';
-import { FileText, TrendingUp, Award, Loader2 } from 'lucide-react';
+import { FileText, TrendingUp, Award, Loader2, Trophy } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
+import { useStudentRanks } from '@/hooks/useClassRanks';
 
 interface Mark {
   id: string;
@@ -103,6 +104,8 @@ export function StudentMarksPage() {
     },
   });
 
+  const { data: ranks } = useStudentRanks(studentData?.id || null);
+
   // Calculate subject summaries
   const subjectSummaries: SubjectSummary[] = marks ? 
     Object.values(
@@ -168,6 +171,38 @@ export function StudentMarksPage() {
           </CardContent>
         </Card>
       </div>
+
+      {ranks && ranks.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Trophy className="h-5 w-5 text-amber-500" />
+              Class Ranking
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+              {ranks.map((r) => (
+                <div
+                  key={r.id}
+                  className="rounded-lg border p-3 bg-gradient-to-br from-amber-50 to-white"
+                >
+                  <p className="text-sm text-muted-foreground">{r.exam_type_name}</p>
+                  <p className="text-2xl font-bold mt-1">
+                    Rank {r.rank}
+                    <span className="text-sm font-normal text-muted-foreground ml-2">
+                      of {r.class_size}
+                    </span>
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {r.percentage}% · {r.total_obtained}/{r.total_max}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {marks && marks.length > 0 ? (
         <Tabs defaultValue="subjects" className="space-y-4">

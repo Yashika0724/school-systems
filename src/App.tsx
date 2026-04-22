@@ -9,6 +9,9 @@ import { DemoProvider } from "@/contexts/DemoContext";
 // Pages
 import Landing from "./pages/Landing";
 import NotFound from "./pages/NotFound";
+import AdmissionsLanding from "./pages/admissions/AdmissionsLanding";
+import ApplyPage from "./pages/admissions/ApplyPage";
+import StatusPage from "./pages/admissions/StatusPage";
 
 // Login Pages
 import StudentLogin from "./pages/login/StudentLogin";
@@ -45,6 +48,11 @@ const App = () => (
             <Routes>
               {/* Landing Page */}
               <Route path="/" element={<Landing />} />
+
+              {/* Public Admissions */}
+              <Route path="/admissions" element={<AdmissionsLanding />} />
+              <Route path="/admissions/apply" element={<ApplyPage />} />
+              <Route path="/admissions/status" element={<StatusPage />} />
               
               {/* Login Routes */}
               <Route path="/login/student" element={<StudentLogin />} />

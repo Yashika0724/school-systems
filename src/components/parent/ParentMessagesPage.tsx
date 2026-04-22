@@ -7,13 +7,21 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { MessageCircle, Send, Loader2, ArrowLeft, Users } from 'lucide-react';
-import { useConversations, useMessages, useSendMessage, useMarkAsRead, useAvailableTeachers } from '@/hooks/useMessaging';
+import {
+  useConversations,
+  useMessages,
+  useSendMessage,
+  useMarkAsRead,
+  useAvailableTeachers,
+  useMessagesRealtime,
+} from '@/hooks/useMessaging';
 import { useAuth } from '@/contexts/AuthContext';
 import { format } from 'date-fns';
 import { cn } from '@/lib/utils';
 
 export function ParentMessagesPage() {
   const { user } = useAuth();
+  useMessagesRealtime();
   const { data: conversations, isLoading: conversationsLoading } = useConversations();
   const { data: teachers, isLoading: teachersLoading } = useAvailableTeachers();
   const sendMessage = useSendMessage();

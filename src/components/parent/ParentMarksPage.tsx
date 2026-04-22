@@ -20,7 +20,8 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table';
-import { Loader2, FileText, TrendingUp, Award } from 'lucide-react';
+import { Loader2, FileText, TrendingUp, Award, Trophy } from 'lucide-react';
+import { useStudentRanks } from '@/hooks/useClassRanks';
 
 interface Mark {
   id: string;
@@ -76,6 +77,7 @@ export function ParentMarksPage() {
   
   const activeChildId = selectedChildId || children?.[0]?.student_id || null;
   const { data: marks, isLoading: marksLoading } = useChildMarks(activeChildId);
+  const { data: ranks } = useStudentRanks(activeChildId);
 
   const selectedChild = children?.find(c => c.student_id === activeChildId);
 
@@ -221,6 +223,38 @@ export function ParentMarksPage() {
           </CardContent>
         </Card>
       </div>
+
+      {ranks && ranks.length > 0 && (
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <Trophy className="h-5 w-5 text-amber-500" />
+              Class Ranking
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid gap-3 sm:grid-cols-2 md:grid-cols-3">
+              {ranks.map((r) => (
+                <div
+                  key={r.id}
+                  className="rounded-lg border p-3 bg-gradient-to-br from-amber-50 to-white"
+                >
+                  <p className="text-sm text-muted-foreground">{r.exam_type_name}</p>
+                  <p className="text-2xl font-bold mt-1">
+                    Rank {r.rank}
+                    <span className="text-sm font-normal text-muted-foreground ml-2">
+                      of {r.class_size}
+                    </span>
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    {r.percentage}% · {r.total_obtained}/{r.total_max}
+                  </p>
+                </div>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Marks by Exam */}
       {marksLoading ? (

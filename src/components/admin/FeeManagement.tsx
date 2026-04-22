@@ -109,8 +109,7 @@ export function FeeManagement() {
 
   const createStructure = useCreateFeeStructure();
   const recordPayment = useRecordPayment();
-  // const generateInvoices = useGenerateInvoices();
-  const generateInvoices = { mutateAsync: async (data: any) => { console.log(data); }, isPending: false }; // Debugging mock
+  const generateInvoices = useGenerateInvoices();
 
   const handleCreateStructure = async () => {
     if (!newStructure.class_id || !newStructure.category_id || !newStructure.amount) return;
@@ -179,14 +178,13 @@ export function FeeManagement() {
 
   return (
     <div className="p-4 md:p-6 space-y-6">
-      <div className="bg-red-500 text-white p-2">DEBUG: FeeManagement is rendering</div>
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold">Fee Management</h1>
           <p className="text-muted-foreground">Manage fee structures, invoices, and payments</p>
         </div>
         <div className="flex gap-2">
-          {/* <Dialog open={isGenerateDialogOpen} onOpenChange={setIsGenerateDialogOpen}>
+          <Dialog open={isGenerateDialogOpen} onOpenChange={setIsGenerateDialogOpen}>
             <DialogTrigger asChild>
               <Button variant="default">
                 <Receipt className="h-4 w-4 mr-2" />
@@ -219,7 +217,7 @@ export function FeeManagement() {
                   <Label>Fee Type</Label>
                   <Select
                     value={generationParams.type}
-                    onValueChange={(v: any) => setGenerationParams(prev => ({ ...prev, type: v }))}
+                    onValueChange={(v: 'monthly' | 'term' | 'one-time' | 'yearly') => setGenerationParams(prev => ({ ...prev, type: v }))}
                   >
                     <SelectTrigger>
                       <SelectValue />
@@ -276,7 +274,11 @@ export function FeeManagement() {
 
                 <div className="space-y-2">
                    <Label>Academic Year</Label>
-                   <Input value={generationParams.academic_year} readOnly />
+                   <Input
+                     value={generationParams.academic_year}
+                     onChange={(e) => setGenerationParams(prev => ({ ...prev, academic_year: e.target.value }))}
+                     placeholder="e.g. 2024-25"
+                   />
                 </div>
 
                 <Button
@@ -288,7 +290,7 @@ export function FeeManagement() {
                 </Button>
               </div>
             </DialogContent>
-          </Dialog> */}
+          </Dialog>
 
           <Dialog open={isStructureDialogOpen} onOpenChange={setIsStructureDialogOpen}>
             <DialogTrigger asChild>

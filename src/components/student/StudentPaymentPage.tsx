@@ -25,21 +25,17 @@ import {
   DialogDescription,
 } from '@/components/ui/dialog';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from '@/components/ui/accordion';
-import { useStudentInvoices, useRecordPayment, FeeInvoice } from '@/hooks/useFeeManagement';
+import { useStudentInvoices, FeeInvoice } from '@/hooks/useFeeManagement';
 import { useDemo } from '@/contexts/DemoContext';
+import { useAuth } from '@/contexts/AuthContext';
+import { useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
+import { createOrder, openRazorpayCheckout, verifyPayment } from '@/lib/razorpay';
 
 // Demo invoices
 const demoInvoices: FeeInvoice[] = [
@@ -92,15 +88,16 @@ const demoInvoices: FeeInvoice[] = [
 
 export function StudentPaymentPage() {
   const { isDemo } = useDemo();
+  const { user } = useAuth();
+  const queryClient = useQueryClient();
   const { data: invoices, isLoading } = useStudentInvoices();
-  const recordPayment = useRecordPayment();
 
   const [selectedInvoice, setSelectedInvoice] = useState<FeeInvoice | null>(null);
   const [isPaymentDialogOpen, setIsPaymentDialogOpen] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
   const [paymentAmount, setPaymentAmount] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState('card');
+  const [lastTxnId, setLastTxnId] = useState<string>('');
 
   const displayInvoices = isDemo ? demoInvoices : invoices;
 
@@ -138,29 +135,51 @@ export function StudentPaymentPage() {
 
   const handleProcessPayment = async () => {
     if (!selectedInvoice || !paymentAmount) return;
-
-    setIsProcessing(true);
-
-    // Simulate payment processing
-    await new Promise(resolve => setTimeout(resolve, 2000));
-
-    if (!isDemo) {
-      try {
-        await recordPayment.mutateAsync({
-          invoice_id: selectedInvoice.id,
-          amount: parseFloat(paymentAmount),
-          payment_method: paymentMethod,
-          transaction_id: `TXN${Date.now()}`,
-        });
-      } catch {
-        setIsProcessing(false);
-        return;
-      }
+    const amount = parseFloat(paymentAmount);
+    if (!Number.isFinite(amount) || amount <= 0) {
+      toast.error('Enter a valid amount');
+      return;
     }
 
-    setIsProcessing(false);
-    setPaymentSuccess(true);
-    toast.success('Payment successful!');
+    if (isDemo) {
+      setIsProcessing(true);
+      await new Promise((r) => setTimeout(r, 1200));
+      setIsProcessing(false);
+      setLastTxnId(`DEMO${Date.now().toString().slice(-8)}`);
+      setPaymentSuccess(true);
+      toast.success('Demo payment successful');
+      return;
+    }
+
+    setIsProcessing(true);
+    try {
+      const order = await createOrder(selectedInvoice.id, amount);
+      const rzp = await openRazorpayCheckout({
+        order,
+        description: `Fee payment for ${order.invoice_number}`,
+        prefill: { email: user?.email ?? undefined },
+      });
+      const verification = await verifyPayment({
+        invoice_id: selectedInvoice.id,
+        razorpay_order_id: rzp.razorpay_order_id,
+        razorpay_payment_id: rzp.razorpay_payment_id,
+        razorpay_signature: rzp.razorpay_signature,
+      });
+      setLastTxnId(rzp.razorpay_payment_id);
+      setPaymentSuccess(true);
+      toast.success(
+        verification.already_recorded
+          ? 'Payment already recorded'
+          : `Payment successful — ₹${verification.amount}`,
+      );
+      queryClient.invalidateQueries({ queryKey: ['student-invoices'] });
+      queryClient.invalidateQueries({ queryKey: ['fee-stats'] });
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : 'Payment failed';
+      if (msg !== 'Payment cancelled') toast.error(msg);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleClosePaymentDialog = () => {
@@ -168,6 +187,7 @@ export function StudentPaymentPage() {
     setSelectedInvoice(null);
     setPaymentAmount('');
     setPaymentSuccess(false);
+    setLastTxnId('');
   };
 
   if (isLoading && !isDemo) {
@@ -384,8 +404,8 @@ export function StudentPaymentPage() {
               <p className="text-2xl font-bold text-green-600 mb-2">
                 {formatCurrency(parseFloat(paymentAmount))}
               </p>
-              <p className="text-sm text-muted-foreground mb-4">
-                Transaction ID: TXN{Date.now().toString().slice(-8)}
+              <p className="text-sm text-muted-foreground mb-4 font-mono break-all px-4">
+                {lastTxnId ? `Txn: ${lastTxnId}` : ''}
               </p>
               <Button onClick={handleClosePaymentDialog} className="w-full">
                 Done
@@ -414,24 +434,9 @@ export function StudentPaymentPage() {
                 </div>
               </div>
 
-              <div className="space-y-2">
-                <Label>Payment Method</Label>
-                <Select value={paymentMethod} onValueChange={setPaymentMethod}>
-                  <SelectTrigger>
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="card">Credit/Debit Card</SelectItem>
-                    <SelectItem value="upi">UPI</SelectItem>
-                    <SelectItem value="netbanking">Net Banking</SelectItem>
-                    <SelectItem value="wallet">Wallet</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-
-              <Button 
-                onClick={handleProcessPayment} 
-                className="w-full" 
+              <Button
+                onClick={handleProcessPayment}
+                className="w-full"
                 size="lg"
                 disabled={isProcessing || !paymentAmount}
               >
@@ -449,7 +454,9 @@ export function StudentPaymentPage() {
               </Button>
 
               <p className="text-xs text-center text-muted-foreground">
-                This is a mock payment. No actual transaction will occur.
+                {isDemo
+                  ? 'Demo mode — no real transaction will occur.'
+                  : 'Secured by Razorpay. UPI, cards, net-banking & wallets supported.'}
               </p>
             </div>
           )}

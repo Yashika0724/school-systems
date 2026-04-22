@@ -122,6 +122,23 @@ export function useStudentBookIssues() {
   });
 }
 
+export function useStudentBookIssuesById(studentId: string | null | undefined) {
+  return useQuery({
+    queryKey: ['student-book-issues-by-id', studentId],
+    enabled: !!studentId,
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from('book_issues')
+        .select(`*, book:books(*)`)
+        .eq('student_id', studentId!)
+        .order('issue_date', { ascending: false });
+
+      if (error) throw error;
+      return data as BookIssue[];
+    },
+  });
+}
+
 export function useAllBookIssues(status?: string) {
   return useQuery({
     queryKey: ['all-book-issues', status],

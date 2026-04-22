@@ -12,6 +12,9 @@ import {
   CalendarDays,
   Library,
   Bus,
+  ScrollText,
+  CalendarClock,
+  Bell,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -23,12 +26,15 @@ const navItems = [
   { icon: LayoutDashboard, label: 'Dashboard', path: '/parent/dashboard' },
   { icon: ClipboardCheck, label: 'Attendance', path: '/parent/attendance' },
   { icon: FileText, label: 'Marks', path: '/parent/marks' },
+  { icon: ScrollText, label: 'Report Card', path: '/parent/report-card' },
+  { icon: CalendarClock, label: 'Meetings', path: '/parent/meetings' },
   { icon: BookOpen, label: 'Homework', path: '/parent/homework' },
   { icon: CreditCard, label: 'Fees', path: '/parent/fees' },
   { icon: Library, label: 'Library', path: '/parent/library' },
   { icon: Bus, label: 'Transport', path: '/parent/transport' },
   { icon: CalendarDays, label: 'Leave Requests', path: '/parent/leaves' },
   { icon: MessageSquare, label: 'Messages', path: '/parent/messages' },
+  { icon: Bell, label: 'Notifications', path: '/parent/notifications' },
   { icon: User, label: 'Profile', path: '/parent/profile' },
 ];
 

@@ -1,47 +1,73 @@
 import { useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { format } from 'date-fns';
-import { CalendarDays, Check, X, Clock, AlertCircle, Users, Loader2 } from 'lucide-react';
+import {
+  CalendarDays,
+  Check,
+  X,
+  Clock,
+  AlertCircle,
+  Users,
+  Loader2,
+  MessageSquare,
+} from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Calendar } from '@/components/ui/calendar';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
+import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
-import { useTeacherClasses, useClassStudents, type TeacherClass } from '@/hooks/useTeacherClasses';
+import {
+  useTeacherClasses,
+  useClassStudents,
+  type TeacherClass,
+} from '@/hooks/useTeacherClasses';
+import { useAttendanceRealtime } from '@/hooks/useAttendance';
+import {
+  type AttendanceStatus,
+  ATTENDANCE_STATUSES,
+  getStatusBgColor,
+} from '@/lib/attendance';
 import { cn } from '@/lib/utils';
 
-type AttendanceStatus = 'present' | 'absent' | 'late' | 'excused';
-
-interface StudentAttendance {
-  studentId: string;
+interface RowState {
   status: AttendanceStatus;
-  remarks?: string;
+  remarks: string;
 }
 
 export function AttendancePage() {
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  // Only fetch classes where teacher is class teacher
   const { data: teacherClasses, isLoading: classesLoading } = useTeacherClasses(true);
-  
+
   const [selectedClass, setSelectedClass] = useState<TeacherClass | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date>(new Date());
-  const [attendanceRecords, setAttendanceRecords] = useState<Map<string, AttendanceStatus>>(new Map());
+  const [rows, setRows] = useState<Map<string, RowState>>(new Map());
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [existingAttendance, setExistingAttendance] = useState<boolean>(false);
+  const [existingAttendance, setExistingAttendance] = useState(false);
+  const [openRemarksFor, setOpenRemarksFor] = useState<string | null>(null);
 
-  const { data: students, isLoading: studentsLoading } = useClassStudents(selectedClass?.class_id || null);
+  const { data: students, isLoading: studentsLoading } = useClassStudents(
+    selectedClass?.class_id || null,
+  );
 
-  // Fetch existing attendance when class or date changes
+  useAttendanceRealtime(selectedClass?.class_id ?? null, selectedDate);
+
   const fetchExistingAttendance = async (classId: string, date: Date) => {
     const { data, error } = await supabase
       .from('attendance')
-      .select('student_id, status')
+      .select('student_id, status, remarks')
       .eq('class_id', classId)
       .eq('date', format(date, 'yyyy-MM-dd'));
 
@@ -51,115 +77,117 @@ export function AttendancePage() {
     }
 
     if (data && data.length > 0) {
-      const records = new Map<string, AttendanceStatus>();
-      data.forEach(record => {
-        records.set(record.student_id, record.status as AttendanceStatus);
+      const next = new Map<string, RowState>();
+      data.forEach((r) => {
+        next.set(r.student_id, {
+          status: r.status as AttendanceStatus,
+          remarks: r.remarks ?? '',
+        });
       });
-      setAttendanceRecords(records);
+      setRows(next);
       setExistingAttendance(true);
     } else {
-      setAttendanceRecords(new Map());
+      setRows(new Map());
       setExistingAttendance(false);
     }
   };
 
   const handleClassChange = (classId: string) => {
-    const cls = teacherClasses?.find(c => c.class_id === classId);
+    const cls = teacherClasses?.find((c) => c.class_id === classId);
     setSelectedClass(cls || null);
-    setAttendanceRecords(new Map());
-    if (cls) {
-      fetchExistingAttendance(cls.class_id, selectedDate);
-    }
+    setRows(new Map());
+    if (cls) fetchExistingAttendance(cls.class_id, selectedDate);
   };
 
   const handleDateChange = (date: Date | undefined) => {
-    if (date) {
-      setSelectedDate(date);
-      if (selectedClass) {
-        fetchExistingAttendance(selectedClass.class_id, date);
-      }
-    }
+    if (!date) return;
+    setSelectedDate(date);
+    if (selectedClass) fetchExistingAttendance(selectedClass.class_id, date);
   };
 
-  const markAttendance = (studentId: string, status: AttendanceStatus) => {
-    setAttendanceRecords(prev => {
+  const setStatus = (studentId: string, status: AttendanceStatus) => {
+    setRows((prev) => {
       const next = new Map(prev);
-      next.set(studentId, status);
+      const existing = next.get(studentId);
+      next.set(studentId, { status, remarks: existing?.remarks ?? '' });
+      return next;
+    });
+  };
+
+  const setRemarks = (studentId: string, remarks: string) => {
+    setRows((prev) => {
+      const next = new Map(prev);
+      const existing = next.get(studentId) ?? { status: 'present' as AttendanceStatus, remarks: '' };
+      next.set(studentId, { ...existing, remarks });
       return next;
     });
   };
 
   const markAllAs = (status: AttendanceStatus) => {
     if (!students) return;
-    const records = new Map<string, AttendanceStatus>();
-    students.forEach(student => {
-      records.set(student.id, status);
+    const next = new Map<string, RowState>();
+    students.forEach((s) => {
+      next.set(s.id, { status, remarks: rows.get(s.id)?.remarks ?? '' });
     });
-    setAttendanceRecords(records);
+    setRows(next);
   };
 
   const handleSubmit = async () => {
     if (!selectedClass || !students || !user) return;
 
-    const unmarkedStudents = students.filter(s => !attendanceRecords.has(s.id));
-    if (unmarkedStudents.length > 0) {
-      toast.error(`Please mark attendance for all ${unmarkedStudents.length} remaining students`);
+    const unmarked = students.filter((s) => !rows.has(s.id));
+    if (unmarked.length > 0) {
+      toast.error(`Please mark attendance for all ${unmarked.length} remaining students`);
       return;
     }
 
     setIsSubmitting(true);
-
     try {
-      const attendanceData = Array.from(attendanceRecords.entries()).map(([studentId, status]) => ({
+      const payload = Array.from(rows.entries()).map(([studentId, state]) => ({
         student_id: studentId,
         class_id: selectedClass.class_id,
         date: format(selectedDate, 'yyyy-MM-dd'),
-        status,
+        status: state.status,
+        remarks: state.remarks.trim() ? state.remarks.trim() : null,
         marked_by: user.id,
       }));
 
-      // Use upsert to handle both insert and update
       const { error } = await supabase
         .from('attendance')
-        .upsert(attendanceData, { 
-          onConflict: 'student_id,date',
-          ignoreDuplicates: false 
-        });
+        .upsert(payload, { onConflict: 'student_id,date', ignoreDuplicates: false });
 
       if (error) throw error;
 
-      toast.success('Attendance saved successfully!');
+      toast.success('Attendance saved');
       setExistingAttendance(true);
       queryClient.invalidateQueries({ queryKey: ['attendance'] });
-    } catch (error: any) {
-      console.error('Error saving attendance:', error);
-      toast.error(error.message || 'Failed to save attendance');
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Failed to save attendance';
+      console.error('Error saving attendance:', err);
+      toast.error(message);
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const getStatusIcon = (status: AttendanceStatus) => {
+  const statusIcon = (status: AttendanceStatus) => {
     switch (status) {
-      case 'present': return <Check className="h-4 w-4" />;
-      case 'absent': return <X className="h-4 w-4" />;
-      case 'late': return <Clock className="h-4 w-4" />;
-      case 'excused': return <AlertCircle className="h-4 w-4" />;
+      case 'present':
+        return <Check className="h-4 w-4" />;
+      case 'absent':
+        return <X className="h-4 w-4" />;
+      case 'late':
+        return <Clock className="h-4 w-4" />;
+      case 'excused':
+        return <AlertCircle className="h-4 w-4" />;
     }
   };
 
-  const getStatusColor = (status: AttendanceStatus) => {
-    switch (status) {
-      case 'present': return 'bg-green-500 hover:bg-green-600';
-      case 'absent': return 'bg-red-500 hover:bg-red-600';
-      case 'late': return 'bg-yellow-500 hover:bg-yellow-600';
-      case 'excused': return 'bg-blue-500 hover:bg-blue-600';
-    }
-  };
-
-  const presentCount = Array.from(attendanceRecords.values()).filter(s => s === 'present').length;
-  const absentCount = Array.from(attendanceRecords.values()).filter(s => s === 'absent').length;
-  const lateCount = Array.from(attendanceRecords.values()).filter(s => s === 'late').length;
+  const values = Array.from(rows.values());
+  const presentCount = values.filter((v) => v.status === 'present').length;
+  const absentCount = values.filter((v) => v.status === 'absent').length;
+  const lateCount = values.filter((v) => v.status === 'late').length;
+  const excusedCount = values.filter((v) => v.status === 'excused').length;
 
   if (classesLoading) {
     return (
@@ -178,14 +206,13 @@ export function AttendancePage() {
         </div>
       </div>
 
-      {/* Filters */}
       <Card>
         <CardContent className="p-4">
           <div className="flex flex-col sm:flex-row gap-4">
             <div className="flex-1">
               <label className="text-sm font-medium mb-2 block">Select Class</label>
-              <Select 
-                value={selectedClass?.class_id || ''} 
+              <Select
+                value={selectedClass?.class_id || ''}
                 onValueChange={handleClassChange}
               >
                 <SelectTrigger>
@@ -225,11 +252,9 @@ export function AttendancePage() {
         </CardContent>
       </Card>
 
-      {/* Attendance Marking */}
       {selectedClass && (
         <>
-          {/* Quick Actions */}
-          <div className="flex flex-wrap gap-2">
+          <div className="flex flex-wrap gap-2 items-center">
             <Button variant="outline" size="sm" onClick={() => markAllAs('present')}>
               <Check className="h-4 w-4 mr-1 text-green-500" />
               Mark All Present
@@ -246,8 +271,7 @@ export function AttendancePage() {
             )}
           </div>
 
-          {/* Summary */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-2 md:grid-cols-5 gap-4">
             <Card className="bg-muted/50">
               <CardContent className="p-4 flex items-center gap-3">
                 <Users className="h-8 w-8 text-muted-foreground" />
@@ -284,9 +308,17 @@ export function AttendancePage() {
                 </div>
               </CardContent>
             </Card>
+            <Card className="bg-blue-50 border-blue-200">
+              <CardContent className="p-4 flex items-center gap-3">
+                <AlertCircle className="h-8 w-8 text-blue-600" />
+                <div>
+                  <p className="text-sm text-blue-700">Excused</p>
+                  <p className="text-2xl font-bold text-blue-800">{excusedCount}</p>
+                </div>
+              </CardContent>
+            </Card>
           </div>
 
-          {/* Student List */}
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -302,44 +334,72 @@ export function AttendancePage() {
               ) : students && students.length > 0 ? (
                 <div className="space-y-2">
                   {students.map((student) => {
-                    const currentStatus = attendanceRecords.get(student.id);
+                    const row = rows.get(student.id);
+                    const status = row?.status ?? null;
+                    const hasRemarks = !!row?.remarks?.trim();
+                    const remarksOpen = openRemarksFor === student.id;
                     return (
                       <div
                         key={student.id}
-                        className="flex items-center justify-between p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
+                        className="p-3 rounded-lg bg-muted/30 hover:bg-muted/50 transition-colors"
                       >
-                        <div className="flex items-center gap-3">
-                          <Avatar className="h-10 w-10">
-                            <AvatarImage src={student.profile?.avatar_url || undefined} />
-                            <AvatarFallback>
-                              {student.profile?.full_name?.charAt(0) || '?'}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div>
-                            <p className="font-medium">{student.profile?.full_name}</p>
-                            <p className="text-sm text-muted-foreground">
-                              Roll No. {student.roll_number || 'N/A'}
-                            </p>
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <Avatar className="h-10 w-10">
+                              <AvatarImage src={student.profile?.avatar_url || undefined} />
+                              <AvatarFallback>
+                                {student.profile?.full_name?.charAt(0) || '?'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div>
+                              <p className="font-medium">{student.profile?.full_name}</p>
+                              <p className="text-sm text-muted-foreground">
+                                Roll No. {student.roll_number || 'N/A'}
+                              </p>
+                            </div>
+                          </div>
+
+                          <div className="flex gap-1 items-center">
+                            {ATTENDANCE_STATUSES.map((s) => (
+                              <Button
+                                key={s}
+                                size="sm"
+                                variant={status === s ? 'default' : 'outline'}
+                                className={cn(
+                                  'w-9 h-9 p-0',
+                                  status === s && getStatusBgColor(s),
+                                )}
+                                onClick={() => setStatus(student.id, s)}
+                                title={s.charAt(0).toUpperCase() + s.slice(1)}
+                              >
+                                {statusIcon(s)}
+                              </Button>
+                            ))}
+                            <Button
+                              size="sm"
+                              variant={hasRemarks ? 'default' : 'ghost'}
+                              className="w-9 h-9 p-0"
+                              onClick={() =>
+                                setOpenRemarksFor(remarksOpen ? null : student.id)
+                              }
+                              title="Add remarks"
+                            >
+                              <MessageSquare className="h-4 w-4" />
+                            </Button>
                           </div>
                         </div>
 
-                        <div className="flex gap-1">
-                          {(['present', 'absent', 'late', 'excused'] as AttendanceStatus[]).map((status) => (
-                            <Button
-                              key={status}
-                              size="sm"
-                              variant={currentStatus === status ? 'default' : 'outline'}
-                              className={cn(
-                                'w-9 h-9 p-0',
-                                currentStatus === status && getStatusColor(status)
-                              )}
-                              onClick={() => markAttendance(student.id, status)}
-                              title={status.charAt(0).toUpperCase() + status.slice(1)}
-                            >
-                              {getStatusIcon(status)}
-                            </Button>
-                          ))}
-                        </div>
+                        {remarksOpen && (
+                          <div className="mt-3 pl-[52px]">
+                            <Textarea
+                              placeholder="Optional remarks (e.g. reason for late/excused)"
+                              value={row?.remarks ?? ''}
+                              onChange={(e) => setRemarks(student.id, e.target.value)}
+                              rows={2}
+                              className="text-sm"
+                            />
+                          </div>
+                        )}
                       </div>
                     );
                   })}
@@ -352,13 +412,12 @@ export function AttendancePage() {
             </CardContent>
           </Card>
 
-          {/* Submit Button */}
           {students && students.length > 0 && (
             <div className="flex justify-end">
-              <Button 
-                size="lg" 
-                onClick={handleSubmit} 
-                disabled={isSubmitting || attendanceRecords.size === 0}
+              <Button
+                size="lg"
+                onClick={handleSubmit}
+                disabled={isSubmitting || rows.size === 0}
               >
                 {isSubmitting ? (
                   <>

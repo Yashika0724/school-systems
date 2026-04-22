@@ -5,3 +5,15 @@ verify_jwt = false
 
 [functions.create-user]
 verify_jwt = false
+
+[functions.enroll-applicant]
+verify_jwt = true
+
+[functions.ai-question-generator]
+verify_jwt = true
+
+[functions.razorpay-create-order]
+verify_jwt = true
+
+[functions.razorpay-verify]
+verify_jwt = true

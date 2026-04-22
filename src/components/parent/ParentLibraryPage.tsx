@@ -19,6 +19,7 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { useParentData, useLinkedChildren } from '@/hooks/useParentData';
+import { useStudentBookIssuesById } from '@/hooks/useLibrary';
 import { useDemo } from '@/contexts/DemoContext';
 
 // Demo data
@@ -47,12 +48,14 @@ export function ParentLibraryPage() {
   const [selectedChildId, setSelectedChildId] = useState<string | null>(null);
 
   const selectedChild = children?.find(c => c.student_id === selectedChildId);
+  const { data: realIssues, isLoading: issuesLoading } = useStudentBookIssuesById(
+    isDemo ? null : selectedChildId,
+  );
 
-  // In a real app, we'd fetch book issues for the selected child
-  const displayIssues = isDemo ? demoBookIssues : [];
+  const displayIssues = isDemo ? demoBookIssues : (realIssues ?? []);
 
   const currentIssues = displayIssues.filter(i => i.status === 'issued');
-  const overdueCount = displayIssues.filter(i => i.status === 'overdue').length;
+  const overdueCount = displayIssues.filter(i => i.status === 'issued' && new Date(i.due_date) < new Date()).length;
 
   if (isLoading && !isDemo) {
     return (
@@ -164,6 +167,11 @@ export function ParentLibraryPage() {
             <div className="text-center py-8 text-muted-foreground">
               <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
               <p>Select a child to view their library books</p>
+            </div>
+          ) : issuesLoading ? (
+            <div className="space-y-3">
+              <Skeleton className="h-16 w-full" />
+              <Skeleton className="h-16 w-full" />
             </div>
           ) : currentIssues.length > 0 ? (
             <div className="space-y-3">

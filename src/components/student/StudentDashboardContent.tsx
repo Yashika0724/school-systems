@@ -24,14 +24,15 @@ interface StudentDashboardContentProps {
 
 export function StudentDashboardContent({ isDemo = false }: StudentDashboardContentProps) {
   // Use real data for logged-in users, demo data for demo mode
-  const { 
-    student: realStudent, 
-    attendance: realAttendance, 
+  const {
+    student: realStudent,
+    attendance: realAttendance,
     recentMarks: realMarks,
     homework: realHomework,
     pendingHomeworkCount,
     todaySchedule: realSchedule,
-    isLoading 
+    upcomingExams: realUpcomingExams,
+    isLoading
   } = useStudentDashboardData();
   
   const { data: announcements = [] } = useStudentAnnouncements();
@@ -53,7 +54,7 @@ export function StudentDashboardContent({ isDemo = false }: StudentDashboardCont
   const recentMarks = isDemo ? demoStudent.recentMarks : realMarks;
   const homework = isDemo ? demoStudent.homework : realHomework;
   const todaySchedule = isDemo ? demoStudent.timetable[0]?.periods || [] : realSchedule;
-  const upcomingExams = isDemo ? demoStudent.upcomingExams : 0;
+  const upcomingExams = isDemo ? demoStudent.upcomingExams : realUpcomingExams;
   const pendingHW = isDemo ? demoStudent.pendingHomework : pendingHomeworkCount;
 
   // Calculate average grade

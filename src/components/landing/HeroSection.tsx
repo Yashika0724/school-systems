@@ -131,6 +131,16 @@ export function HeroSection() {
                 Login to Your Account
               </Button>
             </motion.div>
+            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.98 }}>
+              <Button
+                variant="secondary"
+                size="lg"
+                className="text-lg px-8"
+                onClick={() => navigate('/admissions')}
+              >
+                Apply for Admission
+              </Button>
+            </motion.div>
           </motion.div>
 
           {/* Feature highlights with staggered animation */}

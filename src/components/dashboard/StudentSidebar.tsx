@@ -13,6 +13,14 @@ import {
   LogOut,
   Library,
   Bus,
+  Ticket,
+  ScrollText,
+  Monitor,
+  Lightbulb,
+  Scale,
+  Trophy,
+  Bell,
+  MessageCircle,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -27,10 +35,18 @@ const navItems = [
   { icon: Calendar, label: 'Timetable', path: '/student/timetable' },
   { icon: BookOpen, label: 'Homework', path: '/student/homework' },
   { icon: GraduationCap, label: 'Exams', path: '/student/exams' },
+  { icon: Monitor, label: 'Online Exams', path: '/student/online-exams' },
+  { icon: Ticket, label: 'Hall Tickets', path: '/student/hall-tickets' },
+  { icon: ScrollText, label: 'Report Card', path: '/student/report-card' },
+  { icon: Lightbulb, label: 'Remedial', path: '/student/remedial' },
+  { icon: Scale, label: 'Re-evaluation', path: '/student/reeval' },
+  { icon: Trophy, label: 'My Badges', path: '/student/badges' },
   { icon: CreditCard, label: 'Fee & Payments', path: '/student/fees' },
   { icon: Library, label: 'Library', path: '/student/library' },
   { icon: Bus, label: 'Transport', path: '/student/transport' },
   { icon: Megaphone, label: 'Announcements', path: '/student/announcements' },
+  { icon: Bell, label: 'Notifications', path: '/student/notifications' },
+  { icon: MessageCircle, label: 'Messages', path: '/student/messages' },
   { icon: CalendarDays, label: 'Leave Requests', path: '/student/leave' },
   { icon: User, label: 'Profile', path: '/student/profile' },
 ];
