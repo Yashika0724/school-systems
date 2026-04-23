@@ -3,7 +3,7 @@ import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Loader2 } from 'lucide-react';
 
-type UserRole = 'student' | 'parent' | 'teacher' | 'admin';
+type UserRole = 'student' | 'parent' | 'teacher' | 'admin' | 'driver' | 'conductor';
 
 interface ProtectedRouteProps {
   children: ReactNode;
@@ -15,6 +15,8 @@ const roleLoginPaths: Record<UserRole, string> = {
   parent: '/login/parent',
   teacher: '/login/teacher',
   admin: '/login/admin',
+  driver: '/driver',
+  conductor: '/driver',
 };
 
 const roleDashboardPaths: Record<UserRole, string> = {
@@ -22,6 +24,8 @@ const roleDashboardPaths: Record<UserRole, string> = {
   parent: '/parent/dashboard',
   teacher: '/teacher/dashboard',
   admin: '/admin/dashboard',
+  driver: '/driver',
+  conductor: '/driver',
 };
 
 export function ProtectedRoute({ children, allowedRole }: ProtectedRouteProps) {

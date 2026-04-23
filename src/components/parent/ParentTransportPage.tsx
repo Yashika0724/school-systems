@@ -24,6 +24,7 @@ import {
 import { useParentData, useLinkedChildren } from '@/hooks/useParentData';
 import { useStudentTransportById } from '@/hooks/useTransportation';
 import { useDemo } from '@/contexts/DemoContext';
+import { LiveBusMap } from '@/components/transport/LiveBusMap';
 
 // Demo data
 const demoTransport = {
@@ -168,6 +169,15 @@ export function ParentTransportPage() {
             </CardContent>
           </Card>
 
+          {/* Live Tracking */}
+          {!isDemo && 'bus_id' in displayTransport && 'route_id' in displayTransport && (
+            <LiveBusMap
+              busId={displayTransport.bus_id as string}
+              routeId={displayTransport.route_id as string}
+              pickupName={displayTransport.pickup_point}
+            />
+          )}
+
           {/* Route Details */}
           <Card>
             <CardHeader>
@@ -242,47 +252,70 @@ export function ParentTransportPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {displayTransport.bus?.driver_name && (
-                <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
-                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                    <User className="h-6 w-6 text-primary" />
+              {(() => {
+                const bus = displayTransport.bus as {
+                  driver?: { profile?: { full_name?: string; phone?: string } } | null;
+                  conductor?: { full_name?: string; phone?: string | null } | null;
+                  driver_name?: string | null;
+                  driver_phone?: string | null;
+                  conductor_name?: string | null;
+                  conductor_phone?: string | null;
+                } | undefined;
+                const driverName = bus?.driver?.profile?.full_name || bus?.driver_name;
+                const driverPhone = bus?.driver?.profile?.phone || bus?.driver_phone;
+                if (!driverName) return null;
+                return (
+                  <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
+                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                      <User className="h-6 w-6 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium">{driverName}</p>
+                      <p className="text-sm text-muted-foreground">Driver</p>
+                    </div>
+                    {driverPhone && (
+                      <a
+                        href={`tel:${driverPhone}`}
+                        className="flex items-center gap-2 text-primary hover:underline"
+                      >
+                        <Phone className="h-4 w-4" />
+                        {driverPhone}
+                      </a>
+                    )}
                   </div>
-                  <div className="flex-1">
-                    <p className="font-medium">{displayTransport.bus.driver_name}</p>
-                    <p className="text-sm text-muted-foreground">Driver</p>
-                  </div>
-                  {displayTransport.bus.driver_phone && (
-                    <a
-                      href={`tel:${displayTransport.bus.driver_phone}`}
-                      className="flex items-center gap-2 text-primary hover:underline"
-                    >
-                      <Phone className="h-4 w-4" />
-                      {displayTransport.bus.driver_phone}
-                    </a>
-                  )}
-                </div>
-              )}
+                );
+              })()}
 
-              {displayTransport.bus?.conductor_name && (
-                <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
-                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
-                    <User className="h-6 w-6 text-primary" />
+              {(() => {
+                const bus = displayTransport.bus as {
+                  conductor?: { full_name?: string; phone?: string | null } | null;
+                  conductor_name?: string | null;
+                  conductor_phone?: string | null;
+                } | undefined;
+                const conductorName = bus?.conductor?.full_name || bus?.conductor_name;
+                const conductorPhone = bus?.conductor?.phone || bus?.conductor_phone;
+                if (!conductorName) return null;
+                return (
+                  <div className="flex items-center gap-4 p-4 bg-muted/50 rounded-lg">
+                    <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+                      <User className="h-6 w-6 text-primary" />
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium">{conductorName}</p>
+                      <p className="text-sm text-muted-foreground">Conductor</p>
+                    </div>
+                    {conductorPhone && (
+                      <a
+                        href={`tel:${conductorPhone}`}
+                        className="flex items-center gap-2 text-primary hover:underline"
+                      >
+                        <Phone className="h-4 w-4" />
+                        {conductorPhone}
+                      </a>
+                    )}
                   </div>
-                  <div className="flex-1">
-                    <p className="font-medium">{displayTransport.bus.conductor_name}</p>
-                    <p className="text-sm text-muted-foreground">Conductor</p>
-                  </div>
-                  {displayTransport.bus.conductor_phone && (
-                    <a
-                      href={`tel:${displayTransport.bus.conductor_phone}`}
-                      className="flex items-center gap-2 text-primary hover:underline"
-                    >
-                      <Phone className="h-4 w-4" />
-                      {displayTransport.bus.conductor_phone}
-                    </a>
-                  )}
-                </div>
-              )}
+                );
+              })()}
             </CardContent>
           </Card>
         </>

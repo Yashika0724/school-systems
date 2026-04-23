@@ -82,7 +82,13 @@ Deno.serve(async (req) => {
       // Parent fields
       occupation,
       relationship,
-      studentId
+      studentId,
+      // Driver fields
+      licenseNumber,
+      licenseExpiry,
+      experienceYears,
+      dateOfJoining,
+      emergencyContact
     } = await req.json()
 
     // Validate required fields
@@ -93,7 +99,7 @@ Deno.serve(async (req) => {
       )
     }
 
-    if (!['student', 'teacher', 'parent'].includes(userType)) {
+    if (!['student', 'teacher', 'parent', 'driver'].includes(userType)) {
       return new Response(
         JSON.stringify({ error: 'Invalid user type' }),
         { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
@@ -170,6 +176,18 @@ Deno.serve(async (req) => {
           employee_id: employeeId || null,
           designation: designation || null,
           qualification: qualification || null,
+        })
+      specificError = error
+    } else if (userType === 'driver') {
+      const { error } = await supabaseAdmin
+        .from('drivers')
+        .insert({
+          user_id: userId,
+          license_number: licenseNumber || null,
+          license_expiry: licenseExpiry || null,
+          experience_years: experienceYears ?? null,
+          date_of_joining: dateOfJoining || null,
+          emergency_contact: emergencyContact || null,
         })
       specificError = error
     } else if (userType === 'parent') {

@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import {
   Bus,
   MapPin,
@@ -8,6 +9,11 @@ import {
   Phone,
   Clock,
   IndianRupee,
+  Pencil,
+  ListOrdered,
+  Eye,
+  IdCard,
+  UserSquare2,
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -45,11 +51,31 @@ import {
   useTransportStats,
   useCreateRoute,
   useCreateBus,
+  useDeleteBus,
+  useDeleteRoute,
+  useRemoveTransport,
+  type Bus as BusRow,
+  type BusRoute,
 } from '@/hooks/useTransportation';
+import { Trash2 } from 'lucide-react';
+import { AssignStudentDialog } from './transport/AssignStudentDialog';
+import { EditBusDialog } from './transport/EditBusDialog';
+import { ManageStopsDialog } from './transport/ManageStopsDialog';
+import { DriversTab } from './transport/DriversTab';
+import { ConductorsTab } from './transport/ConductorsTab';
+import { EditRouteDialog } from './transport/EditRouteDialog';
+import { ConfirmAction } from './transport/ConfirmAction';
 
 export function TransportManagement() {
   const [isAddRouteOpen, setIsAddRouteOpen] = useState(false);
   const [isAddBusOpen, setIsAddBusOpen] = useState(false);
+  const [editingBus, setEditingBus] = useState<BusRow | null>(null);
+  const [stopsRoute, setStopsRoute] = useState<BusRoute | null>(null);
+  const [editingRoute, setEditingRoute] = useState<BusRoute | null>(null);
+
+  const deleteRoute = useDeleteRoute();
+  const deleteBus = useDeleteBus();
+  const removeAssignment = useRemoveTransport();
   const [newRoute, setNewRoute] = useState({
     route_name: '',
     route_number: '',
@@ -397,6 +423,14 @@ export function TransportManagement() {
             <Bus className="h-4 w-4 mr-2" />
             Buses
           </TabsTrigger>
+          <TabsTrigger value="drivers">
+            <IdCard className="h-4 w-4 mr-2" />
+            Drivers
+          </TabsTrigger>
+          <TabsTrigger value="conductors">
+            <UserSquare2 className="h-4 w-4 mr-2" />
+            Conductors
+          </TabsTrigger>
           <TabsTrigger value="assignments">
             <Users className="h-4 w-4 mr-2" />
             Assignments
@@ -419,6 +453,7 @@ export function TransportManagement() {
                       <TableHead>Timings</TableHead>
                       <TableHead>Monthly Fee</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead className="w-32">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -465,6 +500,53 @@ export function TransportManagement() {
                             {route.is_active ? 'Active' : 'Inactive'}
                           </Badge>
                         </TableCell>
+                        <TableCell>
+                          <div className="flex gap-1">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => setStopsRoute(route)}
+                              title="Manage stops"
+                            >
+                              <ListOrdered className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              onClick={() => setEditingRoute(route)}
+                              title="Edit route"
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <ConfirmAction
+                              trigger={
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  title="Delete route"
+                                  disabled={deleteRoute.isPending}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              }
+                              title={`Delete ${route.route_name}?`}
+                              description={
+                                <>
+                                  This will also <strong>delete every stop</strong> on
+                                  this route and <strong>remove student
+                                  assignments</strong> tied to it. Any buses linked to
+                                  this route will have their route cleared. This cannot
+                                  be undone.
+                                </>
+                              }
+                              confirmLabel="Delete Route"
+                              destructive
+                              onConfirm={async () => {
+                                await deleteRoute.mutateAsync(route.id);
+                              }}
+                            />
+                          </div>
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -494,7 +576,9 @@ export function TransportManagement() {
                       <TableHead>Route</TableHead>
                       <TableHead>Capacity</TableHead>
                       <TableHead>Driver</TableHead>
+                      <TableHead>Conductor</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead className="w-24">Actions</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -510,13 +594,15 @@ export function TransportManagement() {
                         </TableCell>
                         <TableCell>{bus.capacity} seats</TableCell>
                         <TableCell>
-                          {bus.driver_name ? (
+                          {bus.driver?.profile?.full_name || bus.driver_name ? (
                             <div>
-                              <p className="text-sm">{bus.driver_name}</p>
-                              {bus.driver_phone && (
+                              <p className="text-sm">
+                                {bus.driver?.profile?.full_name || bus.driver_name}
+                              </p>
+                              {(bus.driver?.profile?.phone || bus.driver_phone) && (
                                 <p className="text-xs text-muted-foreground flex items-center gap-1">
                                   <Phone className="h-3 w-3" />
-                                  {bus.driver_phone}
+                                  {bus.driver?.profile?.phone || bus.driver_phone}
                                 </p>
                               )}
                             </div>
@@ -525,9 +611,69 @@ export function TransportManagement() {
                           )}
                         </TableCell>
                         <TableCell>
+                          {bus.conductor?.full_name || bus.conductor_name ? (
+                            <div>
+                              <p className="text-sm">
+                                {bus.conductor?.full_name || bus.conductor_name}
+                              </p>
+                              {(bus.conductor?.phone || bus.conductor_phone) && (
+                                <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                  <Phone className="h-3 w-3" />
+                                  {bus.conductor?.phone || bus.conductor_phone}
+                                </p>
+                              )}
+                            </div>
+                          ) : (
+                            <span className="text-muted-foreground text-xs">—</span>
+                          )}
+                        </TableCell>
+                        <TableCell>
                           <Badge className={bus.is_active ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'}>
                             {bus.is_active ? 'Active' : 'Inactive'}
                           </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex gap-1">
+                            <Button size="sm" variant="ghost" asChild title="View details">
+                              <Link to={`/admin/transport/buses/${bus.id}`}>
+                                <Eye className="h-4 w-4" />
+                              </Link>
+                            </Button>
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              title="Edit bus"
+                              onClick={() => setEditingBus(bus)}
+                            >
+                              <Pencil className="h-4 w-4" />
+                            </Button>
+                            <ConfirmAction
+                              trigger={
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  title="Delete bus"
+                                  disabled={deleteBus.isPending}
+                                >
+                                  <Trash2 className="h-4 w-4" />
+                                </Button>
+                              }
+                              title={`Delete bus ${bus.bus_number}?`}
+                              description={
+                                <>
+                                  This will <strong>remove all student assignments</strong>
+                                  on this bus, along with its trip history and live-tracking
+                                  data. The driver and conductor accounts are kept.
+                                  This cannot be undone.
+                                </>
+                              }
+                              confirmLabel="Delete Bus"
+                              destructive
+                              onConfirm={async () => {
+                                await deleteBus.mutateAsync(bus.id);
+                              }}
+                            />
+                          </div>
                         </TableCell>
                       </TableRow>
                     ))}
@@ -543,7 +689,18 @@ export function TransportManagement() {
           </Card>
         </TabsContent>
 
+        <TabsContent value="drivers" className="space-y-4">
+          <DriversTab />
+        </TabsContent>
+
+        <TabsContent value="conductors" className="space-y-4">
+          <ConductorsTab />
+        </TabsContent>
+
         <TabsContent value="assignments" className="space-y-4">
+          <div className="flex justify-end">
+            <AssignStudentDialog />
+          </div>
           <Card>
             <CardContent className="p-0">
               {assignmentsLoading ? (
@@ -558,6 +715,7 @@ export function TransportManagement() {
                       <TableHead>Route</TableHead>
                       <TableHead>Pickup Point</TableHead>
                       <TableHead>Status</TableHead>
+                      <TableHead className="w-16"></TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -575,6 +733,32 @@ export function TransportManagement() {
                             {assignment.is_active ? 'Active' : 'Inactive'}
                           </Badge>
                         </TableCell>
+                        <TableCell>
+                          <ConfirmAction
+                            trigger={
+                              <Button
+                                size="icon"
+                                variant="ghost"
+                                disabled={removeAssignment.isPending}
+                              >
+                                <Trash2 className="h-4 w-4" />
+                              </Button>
+                            }
+                            title="Remove transport assignment?"
+                            description={
+                              <>
+                                This deactivates the assignment — the student
+                                won't see bus info anymore, and the seat becomes
+                                available. You can re-assign later.
+                              </>
+                            }
+                            confirmLabel="Unassign"
+                            destructive
+                            onConfirm={async () => {
+                              await removeAssignment.mutateAsync(assignment.id);
+                            }}
+                          />
+                        </TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
@@ -589,6 +773,22 @@ export function TransportManagement() {
           </Card>
         </TabsContent>
       </Tabs>
+
+      <EditBusDialog
+        bus={editingBus}
+        open={!!editingBus}
+        onOpenChange={(open) => !open && setEditingBus(null)}
+      />
+      <ManageStopsDialog
+        route={stopsRoute}
+        open={!!stopsRoute}
+        onOpenChange={(open) => !open && setStopsRoute(null)}
+      />
+      <EditRouteDialog
+        route={editingRoute}
+        open={!!editingRoute}
+        onOpenChange={(open) => !open && setEditingRoute(null)}
+      />
     </div>
   );
 }

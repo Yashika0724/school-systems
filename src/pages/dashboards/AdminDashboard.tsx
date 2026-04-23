@@ -28,6 +28,7 @@ import { ProctorConsolePage } from '@/components/admin/ProctorConsolePage';
 import { ReevalQueuePage } from '@/components/admin/ReevalQueuePage';
 import { LibraryManagement } from '@/components/admin/LibraryManagement';
 import { TransportManagement } from '@/components/admin/TransportManagement';
+import { BusDetailsPage } from '@/components/admin/BusDetailsPage';
 import { NotificationsInboxPage } from '@/components/notifications/NotificationsInboxPage';
 import { NotificationComposerPage } from '@/components/notifications/NotificationComposerPage';
 import { AdminMessagesPage } from '@/components/admin/AdminMessagesPage';
@@ -62,6 +63,7 @@ export default function AdminDashboard() {
         <Route path="exams/reeval" element={<ReevalQueuePage />} />
         <Route path="library" element={<LibraryManagement />} />
         <Route path="transport" element={<TransportManagement />} />
+        <Route path="transport/buses/:busId" element={<BusDetailsPage />} />
         <Route path="analytics" element={<AnalyticsDashboard />} />
         <Route path="reports" element={<AdminReports />} />
         <Route path="settings" element={<SystemSettings />} />

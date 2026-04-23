@@ -9,7 +9,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
-type UserRole = 'student' | 'parent' | 'teacher' | 'admin';
+type UserRole = 'student' | 'parent' | 'teacher' | 'admin' | 'driver' | 'conductor';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -43,6 +43,8 @@ export function LoginForm({ userType, title, description, icon, gradientClass }:
         parent: '/parent/dashboard',
         teacher: '/teacher/dashboard',
         admin: '/admin/dashboard',
+        driver: '/driver',
+        conductor: '/driver',
       };
       navigate(dashboardPaths[userRole], { replace: true });
     }

@@ -651,11 +651,14 @@ export type Database = {
         Row: {
           bus_number: string
           capacity: number
+          conductor_id: string | null
           conductor_name: string | null
           conductor_phone: string | null
           created_at: string
+          driver_id: string | null
           driver_name: string | null
           driver_phone: string | null
+          driver_user_id: string | null
           id: string
           is_active: boolean | null
           route_id: string | null
@@ -664,11 +667,14 @@ export type Database = {
         Insert: {
           bus_number: string
           capacity?: number
+          conductor_id?: string | null
           conductor_name?: string | null
           conductor_phone?: string | null
           created_at?: string
+          driver_id?: string | null
           driver_name?: string | null
           driver_phone?: string | null
+          driver_user_id?: string | null
           id?: string
           is_active?: boolean | null
           route_id?: string | null
@@ -677,11 +683,14 @@ export type Database = {
         Update: {
           bus_number?: string
           capacity?: number
+          conductor_id?: string | null
           conductor_name?: string | null
           conductor_phone?: string | null
           created_at?: string
+          driver_id?: string | null
           driver_name?: string | null
           driver_phone?: string | null
+          driver_user_id?: string | null
           id?: string
           is_active?: boolean | null
           route_id?: string | null
@@ -693,6 +702,270 @@ export type Database = {
             columns: ["route_id"]
             isOneToOne: false
             referencedRelation: "bus_routes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "buses_driver_id_fkey"
+            columns: ["driver_id"]
+            isOneToOne: false
+            referencedRelation: "drivers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "buses_conductor_id_fkey"
+            columns: ["conductor_id"]
+            isOneToOne: false
+            referencedRelation: "conductors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      conductors: {
+        Row: {
+          created_at: string
+          date_of_joining: string | null
+          emergency_contact: string | null
+          full_name: string
+          id: string
+          is_active: boolean
+          phone: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          date_of_joining?: string | null
+          emergency_contact?: string | null
+          full_name: string
+          id?: string
+          is_active?: boolean
+          phone?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          date_of_joining?: string | null
+          emergency_contact?: string | null
+          full_name?: string
+          id?: string
+          is_active?: boolean
+          phone?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      drivers: {
+        Row: {
+          created_at: string
+          date_of_joining: string | null
+          emergency_contact: string | null
+          experience_years: number | null
+          id: string
+          is_active: boolean
+          license_expiry: string | null
+          license_number: string | null
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          date_of_joining?: string | null
+          emergency_contact?: string | null
+          experience_years?: number | null
+          id?: string
+          is_active?: boolean
+          license_expiry?: string | null
+          license_number?: string | null
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          date_of_joining?: string | null
+          emergency_contact?: string | null
+          experience_years?: number | null
+          id?: string
+          is_active?: boolean
+          license_expiry?: string | null
+          license_number?: string | null
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
+      bus_locations: {
+        Row: {
+          accuracy_m: number | null
+          heading: number | null
+          id: string
+          lat: number
+          lng: number
+          recorded_at: string
+          speed_kmh: number | null
+          trip_id: string
+        }
+        Insert: {
+          accuracy_m?: number | null
+          heading?: number | null
+          id?: string
+          lat: number
+          lng: number
+          recorded_at?: string
+          speed_kmh?: number | null
+          trip_id: string
+        }
+        Update: {
+          accuracy_m?: number | null
+          heading?: number | null
+          id?: string
+          lat?: number
+          lng?: number
+          recorded_at?: string
+          speed_kmh?: number | null
+          trip_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bus_locations_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "bus_trips"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bus_trips: {
+        Row: {
+          bus_id: string
+          created_at: string
+          ended_at: string | null
+          id: string
+          route_id: string
+          started_at: string
+          started_by: string | null
+          status: "active" | "completed" | "cancelled"
+          trip_type: "morning" | "evening"
+        }
+        Insert: {
+          bus_id: string
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          route_id: string
+          started_at?: string
+          started_by?: string | null
+          status?: "active" | "completed" | "cancelled"
+          trip_type: "morning" | "evening"
+        }
+        Update: {
+          bus_id?: string
+          created_at?: string
+          ended_at?: string | null
+          id?: string
+          route_id?: string
+          started_at?: string
+          started_by?: string | null
+          status?: "active" | "completed" | "cancelled"
+          trip_type?: "morning" | "evening"
+        }
+        Relationships: [
+          {
+            foreignKeyName: "bus_trips_bus_id_fkey"
+            columns: ["bus_id"]
+            isOneToOne: false
+            referencedRelation: "buses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "bus_trips_route_id_fkey"
+            columns: ["route_id"]
+            isOneToOne: false
+            referencedRelation: "bus_routes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      route_stops: {
+        Row: {
+          created_at: string
+          id: string
+          lat: number | null
+          lng: number | null
+          name: string
+          route_id: string
+          scheduled_evening_time: string | null
+          scheduled_morning_time: string | null
+          sequence: number
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          name: string
+          route_id: string
+          scheduled_evening_time?: string | null
+          scheduled_morning_time?: string | null
+          sequence: number
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          lat?: number | null
+          lng?: number | null
+          name?: string
+          route_id?: string
+          scheduled_evening_time?: string | null
+          scheduled_morning_time?: string | null
+          sequence?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "route_stops_route_id_fkey"
+            columns: ["route_id"]
+            isOneToOne: false
+            referencedRelation: "bus_routes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      trip_stop_events: {
+        Row: {
+          event_type: "arrived" | "departed" | "skipped"
+          id: string
+          recorded_at: string
+          route_stop_id: string
+          trip_id: string
+        }
+        Insert: {
+          event_type?: "arrived" | "departed" | "skipped"
+          id?: string
+          recorded_at?: string
+          route_stop_id: string
+          trip_id: string
+        }
+        Update: {
+          event_type?: "arrived" | "departed" | "skipped"
+          id?: string
+          recorded_at?: string
+          route_stop_id?: string
+          trip_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "trip_stop_events_route_stop_id_fkey"
+            columns: ["route_stop_id"]
+            isOneToOne: false
+            referencedRelation: "route_stops"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "trip_stop_events_trip_id_fkey"
+            columns: ["trip_id"]
+            isOneToOne: false
+            referencedRelation: "bus_trips"
             referencedColumns: ["id"]
           },
         ]

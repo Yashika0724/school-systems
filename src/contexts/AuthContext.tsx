@@ -4,7 +4,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
-type UserRole = 'student' | 'parent' | 'teacher' | 'admin';
+type UserRole = 'student' | 'parent' | 'teacher' | 'admin' | 'driver' | 'conductor';
 
 interface AuthContextType {
   user: User | null;
@@ -157,6 +157,8 @@ export function useRoleRedirect() {
         parent: '/parent/dashboard',
         teacher: '/teacher/dashboard',
         admin: '/admin/dashboard',
+        driver: '/driver',
+        conductor: '/driver',
       };
       navigate(dashboardPaths[userRole]);
     }
