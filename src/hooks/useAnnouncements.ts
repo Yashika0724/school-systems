@@ -252,6 +252,17 @@ export function useCreateAnnouncement() {
         if (targetError) throw targetError;
       }
 
+      // Fan-out notifications now that both the announcement and its targets
+      // exist. A DB trigger would fire too early (targets not inserted yet).
+      const { error: notifyError } = await supabase.rpc(
+        'notify_announcement' as never,
+        { p_announcement_id: announcement.id } as never,
+      );
+      if (notifyError) {
+        // Non-fatal — announcement is still saved; log for visibility.
+        console.error('notify_announcement failed:', notifyError);
+      }
+
       return announcement;
     },
     onSuccess: () => {
