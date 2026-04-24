@@ -29,16 +29,108 @@ import {
   useMonthlyFeeCollection,
   useSubjectPerformance,
   useDashboardStats,
+  type AttendanceStats,
+  type ClassPerformance,
+  type MonthlyFeeCollection,
+  type SubjectPerformance,
 } from '@/hooks/useAnalytics';
+import { useDemo } from '@/contexts/DemoContext';
 
 const COLORS = ['#22c55e', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
+const DEMO_ATTENDANCE: AttendanceStats[] = Array.from({ length: 30 }).map((_, i) => {
+  const d = new Date();
+  d.setDate(d.getDate() - (29 - i));
+  const isWeekend = d.getDay() === 0 || d.getDay() === 6;
+  const base = isWeekend ? 0 : 88 + Math.round(Math.sin(i / 3) * 4 + (i % 5));
+  const total = isWeekend ? 0 : 1240;
+  const present = isWeekend ? 0 : Math.round((base / 100) * total);
+  const late = isWeekend ? 0 : Math.round(total * 0.04);
+  const absent = isWeekend ? 0 : total - present - late;
+  return {
+    date: d.toISOString().split('T')[0],
+    present,
+    absent,
+    late,
+    total,
+    percentage: isWeekend ? 0 : base,
+  };
+}).filter((r) => r.total > 0);
+
+const DEMO_CLASS_PERFORMANCE: ClassPerformance[] = [
+  { className: 'Grade 6', section: 'A', averageMarks: 82.4, studentCount: 38, attendanceRate: 94 },
+  { className: 'Grade 7', section: 'A', averageMarks: 78.1, studentCount: 40, attendanceRate: 91 },
+  { className: 'Grade 7', section: 'B', averageMarks: 74.6, studentCount: 36, attendanceRate: 88 },
+  { className: 'Grade 8', section: 'A', averageMarks: 85.9, studentCount: 42, attendanceRate: 96 },
+  { className: 'Grade 9', section: 'A', averageMarks: 69.3, studentCount: 41, attendanceRate: 82 },
+  { className: 'Grade 10', section: 'A', averageMarks: 88.7, studentCount: 44, attendanceRate: 97 },
+  { className: 'Grade 10', section: 'B', averageMarks: 72.2, studentCount: 39, attendanceRate: 85 },
+  { className: 'Grade 11', section: 'A', averageMarks: 58.4, studentCount: 35, attendanceRate: 71 },
+];
+
+const DEMO_FEE_COLLECTION: MonthlyFeeCollection[] = (() => {
+  const months: MonthlyFeeCollection[] = [];
+  const now = new Date();
+  const values: Array<[number, number]> = [
+    [1850000, 320000],
+    [2100000, 280000],
+    [1950000, 410000],
+    [2350000, 190000],
+    [2480000, 220000],
+    [2620000, 180000],
+  ];
+  for (let i = 0; i < 6; i++) {
+    const d = new Date(now.getFullYear(), now.getMonth() - (5 - i), 1);
+    const [collected, pending] = values[i];
+    months.push({
+      month: d.toLocaleDateString('en-IN', { month: 'short', year: 'numeric' }),
+      collected,
+      pending,
+      total: collected + pending,
+    });
+  }
+  return months;
+})();
+
+const DEMO_SUBJECT_PERFORMANCE: SubjectPerformance[] = [
+  { subject: 'Mathematics', averageMarks: 78.4, highestMarks: 99, lowestMarks: 34, passRate: 92 },
+  { subject: 'Science', averageMarks: 81.2, highestMarks: 98, lowestMarks: 41, passRate: 95 },
+  { subject: 'English', averageMarks: 84.6, highestMarks: 97, lowestMarks: 48, passRate: 98 },
+  { subject: 'Social Studies', averageMarks: 76.1, highestMarks: 95, lowestMarks: 38, passRate: 90 },
+  { subject: 'Hindi', averageMarks: 79.8, highestMarks: 96, lowestMarks: 42, passRate: 94 },
+  { subject: 'Computer Science', averageMarks: 87.3, highestMarks: 100, lowestMarks: 55, passRate: 99 },
+];
+
+const DEMO_STATS = {
+  totalStudents: 1284,
+  totalTeachers: 86,
+  totalParents: 1120,
+  totalClasses: 32,
+  attendanceToday: 93,
+  feeCollected: 87,
+  totalFeeExpected: 15800000,
+  totalFeeCollected: 13746000,
+};
+
 export function AnalyticsDashboard() {
-  const { data: attendanceData, isLoading: attendanceLoading } = useAttendanceAnalytics();
-  const { data: classPerformance, isLoading: classLoading } = useClassPerformance();
-  const { data: feeCollection, isLoading: feeLoading } = useMonthlyFeeCollection();
-  const { data: subjectPerformance, isLoading: subjectLoading } = useSubjectPerformance();
-  const { data: stats, isLoading: statsLoading } = useDashboardStats();
+  const { isDemo } = useDemo();
+
+  const attendanceQuery = useAttendanceAnalytics();
+  const classQuery = useClassPerformance();
+  const feeQuery = useMonthlyFeeCollection();
+  const subjectQuery = useSubjectPerformance();
+  const statsQuery = useDashboardStats();
+
+  const attendanceData = isDemo ? DEMO_ATTENDANCE : attendanceQuery.data;
+  const attendanceLoading = isDemo ? false : attendanceQuery.isLoading;
+  const classPerformance = isDemo ? DEMO_CLASS_PERFORMANCE : classQuery.data;
+  const classLoading = isDemo ? false : classQuery.isLoading;
+  const feeCollection = isDemo ? DEMO_FEE_COLLECTION : feeQuery.data;
+  const feeLoading = isDemo ? false : feeQuery.isLoading;
+  const subjectPerformance = isDemo ? DEMO_SUBJECT_PERFORMANCE : subjectQuery.data;
+  const subjectLoading = isDemo ? false : subjectQuery.isLoading;
+  const stats = isDemo ? DEMO_STATS : statsQuery.data;
+  const statsLoading = isDemo ? false : statsQuery.isLoading;
 
   const formatCurrency = (amount: number) => {
     if (amount >= 100000) {

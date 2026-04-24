@@ -14,6 +14,7 @@ import ApplyPage from "./pages/admissions/ApplyPage";
 import StatusPage from "./pages/admissions/StatusPage";
 
 // Login Pages
+import Login from "./pages/Login";
 import StudentLogin from "./pages/login/StudentLogin";
 import ParentLogin from "./pages/login/ParentLogin";
 import TeacherLogin from "./pages/login/TeacherLogin";
@@ -56,6 +57,7 @@ const App = () => (
               <Route path="/admissions/status" element={<StatusPage />} />
               
               {/* Login Routes */}
+              <Route path="/login" element={<Login />} />
               <Route path="/login/student" element={<StudentLogin />} />
               <Route path="/login/parent" element={<ParentLogin />} />
               <Route path="/login/teacher" element={<TeacherLogin />} />
